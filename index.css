@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', 'sans-serif';
+  --font-display: 'Rajdhani', 'sans-serif';
+  
+  --color-omni-dark: #0B0E14;
+  --color-omni-panel: #151923;
+  --color-omni-border: #2A303C;
+  --color-omni-cyan: #06b6d4;
+  --color-omni-cyanGlow: rgba(6, 182, 212, 0.2);
+  --color-omni-orange: #f97316;
+  --color-omni-danger: #ef4444;
+  --color-omni-success: #22c55e;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-omni-dark);
+    color: #e2e8f0;
+    font-family: var(--font-sans);
+    
+    /* Barber Pole Background - Cyberpunk Style */
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(6, 182, 212, 0.05) 0px,
+      rgba(6, 182, 212, 0.05) 2px,
+      transparent 2px,
+      transparent 12px
+    );
+    background-size: 24px 24px;
+    min-height: 100vh;
+  }
+  
+  /* Scrollbar Customization */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #151923; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2A303C; 
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #374151; 
+  }
+}
+
+.grid-bg {
+  /* Legacy grid background */
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
