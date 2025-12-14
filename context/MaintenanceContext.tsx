@@ -9,7 +9,9 @@ import {
   TicketPartUsage,
   TicketActivity,
 } from '../types';
+import { checkAndGeneratePreventiveTickets } from '../utils/PreventiveScheduler';
 import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 import {
   initialPlans,
@@ -38,6 +40,7 @@ interface MaintenanceContextType {
   // Actions
   addAsset: (asset: Asset) => void;
   updateAsset: (asset: Asset) => void;
+  deleteAsset: (id: string) => void; // NEW ACTION
 
   addTicket: (ticket: MaintenanceTicket) => void;
   updateTicket: (ticket: MaintenanceTicket) => void;
@@ -45,6 +48,7 @@ interface MaintenanceContextType {
 
   addPlan: (plan: PreventivePlan) => void;
   updatePlan: (plan: PreventivePlan) => void;
+  deletePlan: (id: string) => void;
 
   addPart: (part: SparePart) => void;
   updatePart: (part: SparePart) => void;
@@ -63,6 +67,8 @@ interface MaintenanceContextType {
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
 
 export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user, profile } = useAuth(); // GET AUTH CONTEXT
+
   // STATE: agora inicializados vazios, carregados via Effect
   const [assets, setAssets] = useState<Asset[]>([]);
   const [tickets, setTickets] = useState<MaintenanceTicket[]>([]);
@@ -95,7 +101,7 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
       .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () =>
         fetchInventory()
       )
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'technicians' }, () =>
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () =>
         fetchTechnicians()
       )
       .on('postgres_changes', { event: '*', schema: 'public', table: 'preventive_plans' }, () =>
@@ -166,6 +172,36 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
+  const fetchTechnicians = async () => {
+    // BUSCAR DE PROFILES (RBAC)
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('role', ['technician', 'manager']);
+
+    if (data) {
+      setTechnicians(
+        data.map((p: any) => ({
+          id: p.id,
+          name: p.name || p.email,
+          email: p.email,
+          role: p.role,
+          status: 'active',
+          shift: p.shift || 'morning',
+          skills: [],
+          efficiency: 100,
+        }))
+      );
+    }
+  };
+
+  const fetchPlans = async () => {
+    const { data } = await supabase.from('preventive_plans').select('*');
+    if (data) {
+      setPlans(data as any);
+    }
+  };
+
   const fetchData = async () => {
     // 1. ASSETS
     const { data: assetsData } = await supabase.from('assets').select('*');
@@ -193,9 +229,31 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
     // 4. TECHNICIANS
     await fetchTechnicians();
 
-    // 5. PREVENTIVE PLANS
+    // 5. PLANS
     await fetchPlans();
   };
+
+  // --- SCHEDULER EFFECT ---
+  // --- SCHEDULER EFFECT ---
+  useEffect(() => {
+    const runScheduler = async () => {
+      if (plans.length > 0 && assets.length > 0 && technicians.length > 0 && isOnline) {
+        const { newTickets, updatedPlans } = await checkAndGeneratePreventiveTickets(
+          supabase,
+          plans,
+          assets,
+          technicians
+        );
+
+        if (newTickets.length > 0) {
+          console.log('Scheduler: Generating tickets...', newTickets.length);
+          newTickets.forEach(t => addTicket(t));
+          updatedPlans.forEach(p => updatePlan(p));
+        }
+      }
+    };
+    runScheduler();
+  }, [plans, assets, technicians, isOnline]);
 
   // --- HELPER FOR OFFLINE ACTIONS ---
   const recordAction = () => {
@@ -254,6 +312,13 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
     await supabase.from('assets').update(dbAsset).eq('id', asset.id);
   };
 
+  const deleteAsset = async (id: string) => {
+    recordAction();
+    // Check if tickets exist logic could be here, but for now we trust UI
+    setAssets(prev => prev.filter(a => a.id !== id)); // Optimistic
+    await supabase.from('assets').delete().eq('id', id);
+  };
+
   const addTicket = async (ticket: MaintenanceTicket) => {
     recordAction();
     setTickets(prev => [ticket, ...prev]); // Optimistic
@@ -261,7 +326,8 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
       id: ticket.id,
       title: ticket.title,
       description: ticket.description,
-      requester: ticket.requester,
+      requester_id: user?.id, // AUTH ID
+      requester_name: profile?.name || user?.email, // AUTH NAME
       asset_id: ticket.assetId,
       type: ticket.type,
       urgency: ticket.urgency,
@@ -299,6 +365,11 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
   const updatePlan = (plan: PreventivePlan) => {
     recordAction();
     setPlans(prev => prev.map(p => (p.id === plan.id ? plan : p)));
+  };
+  const deletePlan = async (id: string) => {
+    recordAction();
+    setPlans(prev => prev.filter(p => p.id !== id));
+    await supabase.from('preventive_plans').delete().eq('id', id);
   };
 
   const addPart = async (part: SparePart) => {
@@ -510,11 +581,13 @@ export const MaintenanceProvider: React.FC<{ children: ReactNode }> = ({ childre
         technicianLocation,
         addAsset,
         updateAsset,
+        deleteAsset,
         addTicket,
         updateTicket,
         updateTicketStatus,
         addPlan,
         updatePlan,
+        deletePlan,
         addPart,
         updatePart,
         addTechnician,

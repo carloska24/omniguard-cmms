@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icons } from './Icons';
 import { ViewState } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
   currentView: ViewState;
@@ -8,6 +9,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
+  const { profile, signOut } = useAuth(); // Auth Hook
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard Geral', icon: Icons.Dashboard },
     { id: 'analytics', label: 'BI & Analytics', icon: Icons.BarChart },
@@ -119,22 +122,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-omni-success rounded-full border-2 border-omni-dark"></div>
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-white truncate font-display">Eng. Silva</p>
-              <p className="text-[10px] text-slate-400 truncate font-mono">ID: SUP-8821 • ONLINE</p>
+              <p className="text-sm font-bold text-white truncate font-display">
+                {profile?.name || 'Usuário'}
+              </p>
+              <p className="text-[10px] text-slate-400 truncate font-mono uppercase">
+                {profile?.role === 'technician'
+                  ? 'Técnico'
+                  : profile?.role === 'manager'
+                  ? 'Gestor'
+                  : 'Admin'}{' '}
+                • ID: {profile?.id.substring(0, 6)}
+              </p>
             </div>
-            <button
-              onClick={() => setView('settings')}
-              className={`text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 ${
-                currentView === 'settings' ? 'text-omni-cyan' : ''
-              }`}
-              title="Configurações do Sistema"
-            >
-              <Icons.Settings
-                className={`w-5 h-5 ${
-                  currentView === 'settings' ? 'animate-spin-slow' : 'hover:animate-spin'
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setView('settings')}
+                className={`text-slate-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10 ${
+                  currentView === 'settings' ? 'text-omni-cyan' : ''
                 }`}
-              />
-            </button>
+                title="Configurações"
+              >
+                <Icons.Settings
+                  className={`w-4 h-4 ${
+                    currentView === 'settings' ? 'animate-spin-slow' : 'hover:animate-spin'
+                  }`}
+                />
+              </button>
+              <button
+                onClick={() => signOut()}
+                className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-500/10"
+                title="Sair do Sistema"
+              >
+                <Icons.LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

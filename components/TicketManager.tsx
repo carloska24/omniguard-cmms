@@ -9,18 +9,24 @@ import {
 } from '../types';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useMaintenance } from '../context/MaintenanceContext';
+import { useAuth } from '../context/AuthContext';
 
 export const TicketManager: React.FC = () => {
   const {
     tickets,
     assets,
     inventory,
+    technicians, // GET TECHS
     addTicket,
     updateTicket,
     updateTicketStatus,
     consumePartInTicket,
   } = useMaintenance(); // USANDO CONTEXTO
+  const { user } = useAuth();
 
+  const [filterStatus, setFilterStatus] = useState<MaintenanceTicket['status'] | 'all' | 'me'>(
+    'all'
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<MaintenanceTicket | null>(null);
   const [newActivity, setNewActivity] = useState('');
@@ -125,12 +131,15 @@ export const TicketManager: React.FC = () => {
   // --- VOICE UTILS ---
   const speakText = (text: string) => {
     window.speechSynthesis.cancel();
-    
+
     // 1. Limpeza de Texto (Remove Emojis e Markdown)
     const cleanText = text
-       .replace(/[\u{1F600}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '')
-       .replace(/[#*`\-]/g, '') // Remove markdown simples
-       .trim();
+      .replace(
+        /[\u{1F600}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu,
+        ''
+      )
+      .replace(/[#*`\-]/g, '') // Remove markdown simples
+      .trim();
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
@@ -138,11 +147,11 @@ export const TicketManager: React.FC = () => {
 
     // 2. Seleção de Voz Melhorada
     const voices = window.speechSynthesis.getVoices();
-    const ptVoice = 
-      voices.find(v => v.lang.includes('pt-BR') && v.name.includes('Google')) || 
+    const ptVoice =
+      voices.find(v => v.lang.includes('pt-BR') && v.name.includes('Google')) ||
       voices.find(v => v.lang.includes('pt-BR')) ||
       voices.find(v => v.lang.includes('pt'));
-    
+
     if (ptVoice) utterance.voice = ptVoice;
 
     window.speechSynthesis.speak(utterance);
@@ -156,7 +165,10 @@ export const TicketManager: React.FC = () => {
   // Helper robusto para extrair JSON
   const extractJson = (text: string) => {
     try {
-      const clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const clean = text
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
       return JSON.parse(clean);
     } catch (e) {
       const match = text.match(/\[[\s\S]*\]/);
@@ -255,9 +267,9 @@ export const TicketManager: React.FC = () => {
           );
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro AI Checklist:', error);
-      alert('Erro ao gerar checklist.');
+      alert(`Erro ao gerar checklist: ${error.message || 'Falha desconhecida'}`);
     } finally {
       setIsGeneratingChecklist(false);
     }
@@ -477,7 +489,40 @@ export const TicketManager: React.FC = () => {
 
     updateTicket(updatedTicket);
     setSelectedTicket(updatedTicket);
+    updateTicket(updatedTicket);
+    setSelectedTicket(updatedTicket);
     setNewActivity('');
+  };
+
+  const handleAssign = (techId: string) => {
+    if (!selectedTicket) return;
+    const tech = technicians.find(t => t.id === techId);
+    const updatedTicket = {
+      ...selectedTicket,
+      assignee: tech?.name || 'Unknown',
+      assignee_id: techId,
+      status: 'assigned' as const,
+    };
+
+    const activity: TicketActivity = {
+      id: Date.now().toString(),
+      userId: 'current-user', // Should be auth user
+      userName: 'Gestor',
+      action: `Atribuiu o chamado para: ${tech?.name}`,
+      timestamp: new Date().toISOString(),
+      type: 'status_change',
+    };
+    updatedTicket.activities = [activity, ...(selectedTicket.activities || [])];
+
+    updateTicket(updatedTicket);
+    setSelectedTicket(updatedTicket);
+  };
+
+  const handlePriorityChange = (p: 'low' | 'medium' | 'high' | 'critical') => {
+    if (!selectedTicket) return;
+    const updatedTicket = { ...selectedTicket, priority: p };
+    updateTicket(updatedTicket);
+    setSelectedTicket(updatedTicket);
   };
 
   // --- CRUCIAL FIX: Real Inventory Deduction via Context ---
@@ -620,6 +665,13 @@ export const TicketManager: React.FC = () => {
       a.code.toLowerCase().includes(assetSearchTerm.toLowerCase())
   );
 
+  const filteredTickets = tickets.filter(t => {
+    if (filterStatus === 'all') return true;
+    if (filterStatus === 'me') return t.assignee_id === user?.id; // Filter by My ID
+    // Filter by Grouped Status for simpler UI if needed, or exact match
+    return t.status === filterStatus;
+  });
+
   return (
     <div className="flex-1 p-6 h-[calc(100vh-64px)] overflow-hidden flex flex-col">
       {/* HEADER & GRID... (Mantendo a estrutura do card) */}
@@ -628,6 +680,41 @@ export const TicketManager: React.FC = () => {
           <h2 className="text-xl font-bold text-white">Chamados de Manutenção Corretiva</h2>
           <p className="text-xs text-slate-400">Gerenciamento de Ordens de Serviço (O.S.)</p>
         </div>
+
+        {/* FILTERS */}
+        <div className="flex bg-slate-800/50 p-1 rounded-lg border border-slate-700/50">
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'me', label: 'Meus Chamados', icon: Icons.User },
+            { id: 'open', label: 'Abertos', color: 'text-slate-300' },
+            { id: 'in-progress', label: 'Em Execução', color: 'text-omni-cyan' },
+            { id: 'waiting-parts', label: 'Aguardando Peça', color: 'text-orange-500' },
+            { id: 'done', label: 'Concluídos', color: 'text-green-500' },
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFilterStatus(f.id as any)}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+                filterStatus === f.id
+                  ? 'bg-slate-700 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              {f.icon && <f.icon className="w-3 h-3" />}
+              <span className={filterStatus === f.id ? '' : f.color}>{f.label}</span>
+              {f.id !== 'me' && (
+                <span className="ml-1 bg-black/20 px-1.5 rounded-full text-[9px] opacity-60">
+                  {f.id === 'all'
+                    ? tickets.length
+                    : f.id === 'me'
+                    ? tickets.filter(t => t.assignee_id === user?.id).length
+                    : tickets.filter(t => t.status === f.id).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <button
           onClick={() => {
             setSelectedTicket(null);
@@ -640,7 +727,7 @@ export const TicketManager: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 overflow-y-auto pb-6 pr-2 custom-scrollbar">
-        {tickets.map(ticket => {
+        {filteredTickets.map(ticket => {
           const asset = assets.find(a => a.id === ticket.assetId);
           const urgencyStyle = getUrgencyStyles(ticket.urgency);
           const statusStyle = getStatusStyle(ticket.status);
@@ -1033,23 +1120,34 @@ export const TicketManager: React.FC = () => {
       {selectedTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in zoom-in-95 duration-200">
           <div className="bg-omni-panel border border-omni-border rounded-xl w-full max-w-7xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-white/10">
-            {/* Modal Header */}
-            <div className="h-16 px-6 border-b border-omni-border bg-omni-dark flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-6">
+            {/* Modal Header REFACTORED FOR WORKFLOW */}
+            <div className="h-20 px-6 border-b border-omni-border bg-omni-dark flex items-center justify-between shrink-0 gap-4">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center border bg-opacity-20 ${
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center border bg-opacity-20 shrink-0 ${
                     getUrgencyStyles(selectedTicket.urgency).bg.split(' ')[0]
                   } ${getUrgencyStyles(selectedTicket.urgency).border}`}
                 >
-                  <Icons.Wrench className="w-5 h-5 text-white" />
+                  {selectedTicket.type === 'electrical' ? (
+                    <Icons.Zap className="w-5 h-5 text-white" />
+                  ) : (
+                    <Icons.Wrench className="w-5 h-5 text-white" />
+                  )}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-3 mb-0.5">
-                    <h2 className="text-xl font-bold text-white tracking-tight">
+                    <h2 className="text-xl font-bold text-white tracking-tight truncate">
                       {selectedTicket.title}
                     </h2>
-                    <span className="text-xs font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded">
+                    <span className="text-xs font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded shrink-0">
                       #{selectedTicket.id}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ml-2 ${
+                        getStatusStyle(selectedTicket.status).class
+                      }`}
+                    >
+                      {getStatusStyle(selectedTicket.status).label}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-slate-400">
@@ -1057,38 +1155,113 @@ export const TicketManager: React.FC = () => {
                       <Icons.Box className="w-3 h-3" />{' '}
                       {assets.find(a => a.id === selectedTicket.assetId)?.name}
                     </span>
-                    <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
+                    <span className="w-px h-3 bg-slate-700"></span>
                     <span className="flex items-center gap-1">
-                      <Icons.User className="w-3 h-3" /> {selectedTicket.requester}
+                      <Icons.User className="w-3 h-3" /> Req: {selectedTicket.requester}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                {/* Status Dropdown */}
-                <select
-                  value={selectedTicket.status}
-                  onChange={e => handleStatusChange(e.target.value as any)}
-                  className={`bg-omni-dark border border-omni-border text-xs rounded px-3 py-1.5 font-bold outline-none focus:border-omni-cyan uppercase cursor-pointer hover:border-slate-500 transition-colors ${
-                    selectedTicket.status === 'done'
-                      ? 'text-green-500 border-green-900'
-                      : 'text-orange-500'
-                  }`}
-                >
-                  <option value="open">Aberto</option>
-                  <option value="in-progress">Em Execução</option>
-                  <option value="waiting-parts">Aguardando Peças</option>
-                  <option value="done">Concluído</option>
-                </select>
-                <div className="h-8 w-px bg-slate-700"></div>
-                <button
-                  onClick={() => setSelectedTicket(null)}
-                  className="group p-2 rounded-full hover:bg-slate-800 transition-colors"
-                >
-                  <Icons.Close className="w-6 h-6 text-slate-400 group-hover:text-white" />
-                </button>
+              {/* WORKFLOW ACTIONS */}
+              <div className="flex items-center gap-4 bg-slate-800/50 p-1.5 rounded-lg border border-slate-700/50">
+                {/* PRIORITY SELECTOR */}
+                <div className="flex flex-col px-2">
+                  <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">
+                    Prioridade
+                  </span>
+                  <select
+                    value={selectedTicket.priority || 'medium'}
+                    onChange={e => handlePriorityChange(e.target.value as any)}
+                    className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer hover:text-omni-cyan"
+                  >
+                    <option value="low">Baixa</option>
+                    <option value="medium">Média</option>
+                    <option value="high">Alta</option>
+                    <option value="critical">Crítica</option>
+                  </select>
+                </div>
+
+                <div className="w-px h-8 bg-slate-700"></div>
+
+                {/* ASSIGNEE SELECTOR */}
+                <div className="flex flex-col px-2 min-w-[120px]">
+                  <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">
+                    Técnico Resp.
+                  </span>
+                  <select
+                    value={selectedTicket.assignee_id || ''}
+                    onChange={e => handleAssign(e.target.value)}
+                    className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer hover:text-omni-cyan w-full"
+                  >
+                    <option value="">-- Atribuir --</option>
+                    {technicians.map(tech => (
+                      <option key={tech.id} value={tech.id} className="text-black">
+                        {tech.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="w-px h-8 bg-slate-700"></div>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex gap-2">
+                  {selectedTicket.status === 'open' && (
+                    <button
+                      onClick={() => handleStatusChange('analyzing')}
+                      className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg"
+                    >
+                      Iniciar Análise
+                    </button>
+                  )}
+                  {selectedTicket.status === 'analyzing' && (
+                    <button
+                      onClick={() => handleStatusChange('assigned')}
+                      className="px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg"
+                    >
+                      Liberar p/ Execução
+                    </button>
+                  )}
+                  {(selectedTicket.status === 'assigned' ||
+                    selectedTicket.status === 'waiting-parts') && (
+                    <button
+                      onClick={() => handleStatusChange('in-progress')}
+                      className="px-3 py-1.5 rounded bg-omni-cyan hover:bg-cyan-400 text-omni-dark text-xs font-bold shadow-lg flex items-center gap-1"
+                    >
+                      <Icons.Play className="w-3 h-3" /> Iniciar Trab.
+                    </button>
+                  )}
+                  {selectedTicket.status === 'in-progress' && (
+                    <>
+                      <button
+                        onClick={() => handleStatusChange('waiting-parts')}
+                        className="px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow-lg"
+                      >
+                        Aguardar Peça
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange('done')}
+                        className="px-3 py-1.5 rounded bg-green-600 hover:bg-green-500 text-white text-xs font-bold shadow-lg flex items-center gap-1"
+                      >
+                        <Icons.Check className="w-3 h-3" /> Concluir
+                      </button>
+                    </>
+                  )}
+                  {selectedTicket.status === 'done' && (
+                    <span className="text-green-500 font-bold text-xs px-3 flex items-center gap-1">
+                      <Icons.Check className="w-4 h-4" /> Finalizado
+                    </span>
+                  )}
+                </div>
               </div>
+
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="group p-2 rounded-full hover:bg-slate-800 transition-colors ml-4"
+              >
+                <Icons.Close className="w-6 h-6 text-slate-400 group-hover:text-white" />
+              </button>
             </div>
 
             {/* Modal Body: Split View */}

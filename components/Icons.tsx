@@ -79,6 +79,8 @@ import {
   RefreshCw,
   BarChart2,
   Crosshair,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
 
 export const Icons = {
@@ -96,7 +98,7 @@ export const Icons = {
   ChevronDown: ChevronDown,
   Activity: Activity,
   Alert: AlertTriangle,
-  AlertTriangle: AlertTriangle, // Added direct export
+  AlertTriangle: AlertTriangle,
   Clock: Clock,
   Check: CheckCircle2,
   CheckCircle2: CheckCircle2,
@@ -167,4 +169,6 @@ export const Icons = {
   RefreshCw: RefreshCw,
   BarChart2: BarChart2,
   Crosshair: Crosshair,
+  ArrowUpRight: ArrowUpRight,
+  ArrowDownRight: ArrowDownRight,
 };

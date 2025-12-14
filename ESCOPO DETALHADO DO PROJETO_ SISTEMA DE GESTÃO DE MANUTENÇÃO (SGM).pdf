@@ -1,0 +1,1825 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 4011
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 20 Tf
+23. TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(ESCOPO DETALHADO DO PROJETO: SISTEMA DE GESTÃO DE MANUTENÇÃO \(SGM\)) Tj
+ET
+56.6929133858267775 771.0238582677164914 m
+538.5870866141731312 771.0238582677164914 l
+S
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+241.3599999999999852 751.1813385826771992 Td
+(11/10/2025, 09:29:47) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 717.1655905511811397 Td
+(1 INTRODUÇÃO) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 688.819133858267719 Td
+(Este documento detalha o escopo para o desenvolvimento de um Sistema de Gestão de) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 668.9766141732283131 Td
+(Manutenção \(SGM\), com o objetivo de otimizar os processos de manutenção de máquinas) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 649.1340944881889072 Td
+(e equipamentos de uma empresa. O SGM visa centralizar informações, automatizar o) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 629.291574803149615 Td
+(planejamento e a execução de manutenções, e melhorar a rastreabilidade e a eficiência) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 609.4490551181102092 Td
+(operacional.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 581.1025984251967884 Td
+(2 OBJETIVO GERAL) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 552.7561417322833677 Td
+(Desenvolver um software eficiente, intuitivo, seguro e escalável para a gestão completa de) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 532.9136220472440755 Td
+(máquinas, equipamentos e seus respectivos processos de manutenção \(corretiva e) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 513.0711023622046696 Td
+(preventiva\), garantindo a longevidade dos ativos e a redução de custos operacionais.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 484.7246456692913057 Td
+(3 FUNCIONALIDADES PRINCIPAIS DETALHADAS) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 456.378188976377885 Td
+(Esta seção descreve em detalhes as funcionalidades chave que serão desenvolvidas para) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 436.5356692913385359 Td
+(o Sistema de Gestão de Manutenção.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 408.1892125984251152 Td
+(3.1 CADASTRO DE MÁQUINAS E EQUIPAMENTOS) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 379.8427559055117513 Td
+(Esta funcionalidade permitirá o registro e a gestão de todas as informações relevantes) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 360.0002362204724022 Td
+(sobre os ativos da empresa.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 331.6537795275589815 Td
+(3.1.1 Página de cadastro/listagem de equipamentos) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 303.3073228346455608 Td
+(**Campos de identificação**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 274.9608661417322537 Td
+(Nome do Equipamento \(obrigatório\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 246.614409448818833 Td
+(Código de Identificação \(patrimônio/tag\) \(obrigatório, único\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 218.2679527559054122 Td
+(Modelo) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 189.9214960629919915 Td
+(Fabricante) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 161.5750393700786844 Td
+(Número de Série) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 133.2285826771652637 Td
+(Data de Aquisição) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 104.882125984251843 Td
+(Custo de Aquisição) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 76.5356692913385359 Td
+(Localização \(setor, linha de produção, unidade\)) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 3518
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Status Operacional \(Ativo, Inativo, Em Manutenção, Desativado\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(Criticidade \(Ex: Baixa, Média, Alta\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 728.5041732283464171 Td
+(**Características técnicas**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 700.15771653543311 Td
+(Potência \(Kw, CV, etc.\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 671.8112598425196893 Td
+(Capacidade \(Litros, Toneladas, RPM, etc.\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 643.4648031496062686 Td
+(Voltagem) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 615.1183464566928478 Td
+(Tipo de Combustível/Energia) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 586.7718897637794271 Td
+(Especificações dimensionais \(altura, largura, peso\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 558.42543307086612 Td
+(Outros parâmetros técnicos customizáveis) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 530.0789763779526993 Td
+(**Informações de manutenção**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 501.7325196850393354 Td
+(Histórico de Manutenções \(link para chamados e planos de manutenção executados\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 473.3860629921259147 Td
+(Data da Última Manutenção Preventiva) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 445.0396062992125508 Td
+(Data da Última Manutenção Corretiva) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 416.69314960629913 Td
+(Próxima Manutenção Preventiva Agendada) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 388.3466929133857661 Td
+(Média de Tempo Entre Falhas \(MTBF - calculado pelo sistema\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 360.0002362204724022 Td
+(Média de Tempo para Reparo \(MTTR - calculado pelo sistema\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 331.6537795275589815 Td
+(**Documentação anexada**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 303.3073228346455608 Td
+(Upload de manuais técnicos \(PDF\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 274.9608661417322537 Td
+(Upload de esquemas elétricos/hidráulicos) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 246.614409448818833 Td
+(Upload de notas fiscais/garantias) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 218.2679527559054122 Td
+(Upload de imagens do equipamento) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 189.9214960629919915 Td
+(**Peças de reposição associadas**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 161.5750393700786844 Td
+(Lista de peças críticas/frequentes para o equipamento) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 133.2285826771652637 Td
+(Link para o inventário de peças \(se houver integração futura\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 104.882125984251843 Td
+(**Funcionalidades adicionais**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 76.5356692913385359 Td
+(Busca e Filtros: Por nome, código, localização, status, fabricante, etc.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 3816
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Edição e Exclusão: Com controle de permissões e histórico de alterações.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(Visualização Detalhada: Tela individual para cada equipamento com todas as informações) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 737.0081102362204319 Td
+(e histórico.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 708.6616535433070112 Td
+(3.2 CHAMADOS DE MANUTENÇÃO CORRETIVA) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 680.3151968503937042 Td
+(Esta funcionalidade permitirá o registro, acompanhamento e gestão de solicitações de) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 660.4726771653542983 Td
+(manutenção corretiva.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 632.1262204724408775 Td
+(3.2.1 Página de abertura de chamado) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 603.7797637795274568 Td
+(**Dados do solicitante**: Nome, Departamento \(preenchimento automático para usuários) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 583.9372440944881646 Td
+(logados\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 555.5907874015747439 Td
+(**Equipamento afetado**: Seleção do equipamento cadastrado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 527.2443307086614368 Td
+(**Tipo de problema**: Campo de texto livre e/ou lista pré-definida de categorias \(Ex: Falha) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 507.4018110236219741 Td
+(elétrica, Vazamento, Ruído anormal, Quebra mecânica\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 479.0553543307086102 Td
+(**Descrição detalhada do problema**: Campo de texto para o solicitante descrever o) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 459.2128346456692611 Td
+(ocorrido.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 430.8663779527558404 Td
+(**Data e hora da ocorrência**: Data/hora em que o problema foi notado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 402.5199212598424765 Td
+(**Urgência sugerida**: Baixa, Média, Alta.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 374.1734645669290558 Td
+(**Anexos**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 345.8270078740156919 Td
+(Upload de imagens ou vídeos curtos do problema.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 317.480551181102328 Td
+(Upload de documentos adicionais.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 289.1340944881889072 Td
+(3.2.2 Página de gestão de chamados \(painel de controle\)) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 260.7876377952754865 Td
+(**Status do chamado**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 232.4411811023621794 Td
+(Aberto: Chamado recém-criado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 204.0947244094487587 Td
+(Em Análise: Aguardando avaliação do responsável.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 175.748267716535338 Td
+(Atribuído: Designado a um técnico/equipe.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 147.4018110236219172 Td
+(Em Execução: O trabalho de manutenção está em andamento.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 119.0553543307086102 Td
+(Aguardando Peças: Manutenção pausada por falta de material.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 90.7088976377951894 Td
+(Concluído: Manutenção finalizada.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 3716
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Cancelado: Chamado cancelado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(**Prioridade**: Definida pelo gestor de manutenção \(Baixa, Média, Alta, Urgente\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 728.5041732283464171 Td
+(**Atribuição**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 700.15771653543311 Td
+(Designar o chamado a um técnico ou equipe específica.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 671.8112598425196893 Td
+(Campo para registro do técnico responsável pela execução.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 643.4648031496062686 Td
+(**Registro de atividades**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 615.1183464566928478 Td
+(Campo de texto para o técnico registrar as ações tomadas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 586.7718897637794271 Td
+(Registro de peças utilizadas \(se houver integração futura com estoque\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 558.42543307086612 Td
+(Tempo gasto na execução da manutenção.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 530.0789763779526993 Td
+(**Histórico de eventos do chamado**: Log de todas as alterações de status, atribuições e) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 510.2364566929133503 Td
+(registros.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 481.8899999999999295 Td
+(**Funcionalidades adicionais**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 453.5435433070865656 Td
+(Busca e Filtros: Por equipamento, status, prioridade, técnico, período, solicitante.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 425.1970866141731449 Td
+(Notificações:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 396.850629921259781 Td
+(Email para o solicitante sobre a abertura, atribuição e conclusão do chamado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 368.5041732283464171 Td
+(Email/alerta para o técnico quando um chamado é atribuído.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 340.1577165354329964 Td
+(Reabertura de Chamados: Opção para reabrir chamados concluídos se o problema) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 320.3151968503935905 Td
+(persistir.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 291.9687401574802834 Td
+(3.3 PLANEJAMENTO DE MANUTENÇÃO PREVENTIVA) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 263.6222834645668627 Td
+(Esta funcionalidade permitirá a criação, agendamento e gestão de planos de manutenção) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 243.7797637795274568 Td
+(preventiva.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 215.4333070866141497 Td
+(3.3.1 Página de criação de planos de manutenção) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 187.086850393700729 Td
+(**Nome do plano**: Ex: \\"Manutenção Semanal Motor X\\", \\"Revisão Anual Bomba Y\\".) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 158.7403937007873083 Td
+(**Descrição**: Detalhes do objetivo do plano.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 130.3939370078738875 Td
+(**Equipamentos associados**: Seleção de um ou múltiplos equipamentos.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 102.0474803149605805 Td
+(**Periodicidade**:) Tj
+ET
+endstream
+endobj
+11 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 12 0 R
+>>
+endobj
+12 0 obj
+<<
+/Length 3614
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Baseada em tempo: Diária, Semanal, Mensal, Trimestral, Semestral, Anual, Customizada.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(Baseada em contador/uso: Horímetro, Cíclico, Quilometragem \(se houver sensores) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 737.0081102362204319 Td
+(integrados ou leitura manual\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 708.6616535433070112 Td
+(**Tarefas e atividades**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 680.3151968503937042 Td
+(Definição de uma lista de tarefas a serem realizadas \(com checklists\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 651.9687401574802834 Td
+(Tempo estimado para cada tarefa.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 623.6222834645668627 Td
+(Recursos necessários \(ferramentas, EPIs\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 595.2758267716535556 Td
+(Peças/Materiais necessários.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 566.9293700787401349 Td
+(**Responsáveis padrão**: Definir técnicos/equipes preferenciais para a execução.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 538.5829133858267141 Td
+(3.3.2 Página de agendamento e gestão de preventivas) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 510.2364566929133503 Td
+(**Geração automática de ordens de serviço \(OS\)**: O sistema gera automaticamente OSs) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 490.3939370078739444 Td
+(com base nos planos e periodicidades.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 462.0474803149605805 Td
+(**Visualização em calendário**: Exibição das manutenções agendadas em um formato de) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 442.2049606299212314 Td
+(calendário.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 413.8585039370078107 Td
+(**Status da OS preventiva**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 385.5120472440944468 Td
+(Pendente: OS gerada, aguardando execução.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 357.1655905511810261 Td
+(Agendada: Data definida para execução.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 328.8191338582676053 Td
+(Em Execução: A manutenção está em andamento.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 300.4726771653542983 Td
+(Concluída: Manutenção finalizada.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 272.1262204724408775 Td
+(Atrasada: Data limite de execução ultrapassada.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 243.7797637795274568 Td
+(Cancelada: OS cancelada.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 215.4333070866141497 Td
+(**Registro de execução**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 187.086850393700729 Td
+(Data e hora de início/fim da manutenção.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 158.7403937007873083 Td
+(Técnico\(s\) responsável\(is\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 130.3939370078738875 Td
+(Preenchimento do checklist de tarefas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 102.0474803149605805 Td
+(Registro de peças e materiais utilizados.) Tj
+ET
+endstream
+endobj
+13 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 14 0 R
+>>
+endobj
+14 0 obj
+<<
+/Length 3817
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Observações e condições encontradas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(Anexos \(fotos da manutenção, relatórios\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 728.5041732283464171 Td
+(**Notificações automáticas**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 700.15771653543311 Td
+(Lembretes para os responsáveis antes das manutenções agendadas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 671.8112598425196893 Td
+(Alertas para gestores sobre manutenções atrasadas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 643.4648031496062686 Td
+(**Funcionalidades adicionais**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 615.1183464566928478 Td
+(Busca e Filtros: Por equipamento, plano, status, técnico, período.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 586.7718897637794271 Td
+(Reagendamento: Possibilidade de ajustar datas das OSs.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 558.42543307086612 Td
+(Relatórios de Conformidade: Comparar manutenções planejadas vs. executadas.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 530.0789763779526993 Td
+(4 REQUISITOS NÃO FUNCIONAIS) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 501.7325196850393354 Td
+(Esta seção aborda as qualidades e restrições que o software deve atender para garantir) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 481.8899999999999295 Td
+(sua eficácia, segurança e usabilidade.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 453.5435433070865656 Td
+(**Usabilidade e experiência do usuário \(UX/UI\)**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 425.1970866141731449 Td
+(Interface intuitiva, limpa e de fácil navegação.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 396.850629921259781 Td
+(Responsividade: Acessível em diferentes dispositivos \(desktops, tablets, smartphones\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 368.5041732283464171 Td
+(Design consistente com as melhores práticas de UI/UX.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 340.1577165354329964 Td
+(Feedback visual claro para ações do usuário.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 311.8112598425195756 Td
+(**Segurança**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 283.4648031496062686 Td
+(Autenticação: Sistema de login com nome de usuário e senha.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 255.1183464566928478 Td
+(Controle de Acesso Baseado em Papéis \(RBAC\):) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 226.7718897637794271 Td
+(Administrador: Acesso total ao sistema.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 198.4254330708660063 Td
+(Gerente de Manutenção: Gerencia equipamentos, chamados, planos, relatórios.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 170.0789763779526993 Td
+(Técnico de Manutenção: Visualiza e executa chamados/preventivas atribuídos, registra) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 150.2364566929132934 Td
+(atividades.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 121.8899999999998727 Td
+(Solicitante: Abre chamados corretivos, visualiza status dos próprios chamados.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 93.5435433070865656 Td
+(Logs de Auditoria: Registro de operações críticas \(criação, edição, exclusão de registros\).) Tj
+ET
+endstream
+endobj
+15 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 16 0 R
+>>
+endobj
+16 0 obj
+<<
+/Length 4008
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Criptografia de Dados: Proteção de dados sensíveis em trânsito e em repouso.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 756.8506299212598378 Td
+(**Escalabilidade**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 728.5041732283464171 Td
+(Arquitetura que suporte um crescimento futuro de usuários, equipamentos e volume de) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 708.6616535433070112 Td
+(dados sem degradação significativa de desempenho.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 680.3151968503937042 Td
+(Capacidade de adicionar novas funcionalidades sem redesenho completo.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 651.9687401574802834 Td
+(**Desempenho**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 623.6222834645668627 Td
+(Tempos de resposta rápidos para todas as operações.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 595.2758267716535556 Td
+(Otimização de consultas ao banco de dados.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 566.9293700787401349 Td
+(**Confiabilidade**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 538.5829133858267141 Td
+(Alta disponibilidade do sistema.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 510.2364566929133503 Td
+(Mecanismos de backup e recuperação de dados.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 481.8899999999999295 Td
+(**Manutenibilidade**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 453.5435433070865656 Td
+(Código limpo, modular e bem documentado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 425.1970866141731449 Td
+(Facilidade para futuras atualizações e correções.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 396.850629921259781 Td
+(**Relatórios e dashboards \(módulo inicial\)**:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 368.5041732283464171 Td
+(Dashboard inicial com indicadores chave \(KPIs\) sobre a saúde da manutenção.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 340.1577165354329964 Td
+(Relatórios básicos sobre: histórico de equipamentos, chamados por status, manutenções) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 320.3151968503935905 Td
+(preventivas concluídas vs. atrasadas, custos de manutenção \(se houver integração) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 300.4726771653542983 Td
+(financeira\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 272.1262204724408775 Td
+(5 CONSIDERAÇÕES TECNOLÓGICAS) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 243.7797637795274568 Td
+(Esta seção apresenta uma sugestão de tecnologias e abordagens para o desenvolvimento) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 223.9372440944881646 Td
+(do SGM.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 195.5907874015747439 Td
+(**Arquitetura**: Aplicação web com arquitetura cliente-servidor \(frontend, backend, banco) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 175.748267716535338 Td
+(de dados\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 147.4018110236219172 Td
+(**Frontend**: Framework JavaScript moderno \(ex: React, Angular, Vue.js\) para uma) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 127.559291338582625 Td
+(interface rica e reativa.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 99.2128346456692043 Td
+(**Backend**: Linguagem/Framework robusto \(ex: Node.js com Express, Python com) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 79.3703149606297984 Td
+(Django/Flask, Java com Spring Boot\) para a lógica de negócio e API.) Tj
+ET
+endstream
+endobj
+17 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 18 0 R
+>>
+endobj
+18 0 obj
+<<
+/Length 3207
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(**Banco de dados**: Relacional \(ex: PostgreSQL, MySQL\) para garantir integridade e) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 765.3545669291338527 Td
+(relacionamentos dos dados.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 737.0081102362204319 Td
+(**Infraestrutura**: Nuvem \(ex: AWS, Azure, Google Cloud Platform\) para escalabilidade,) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 717.1655905511811397 Td
+(segurança e gerenciamento simplificado.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 688.819133858267719 Td
+(6 FASES DO PROJETO) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 660.4726771653542983 Td
+(O desenvolvimento do SGM será dividido nas seguintes fases principais:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 632.1262204724408775 Td
+(**Análise e design**: Refinamento dos requisitos, prototipagem, design da arquitetura,) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 612.2837007874015853 Td
+(modelagem do banco de dados.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 583.9372440944881646 Td
+(**Desenvolvimento**: Implementação das funcionalidades, desenvolvimento do frontend e) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 564.0947244094487587 Td
+(backend.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 535.748267716535338 Td
+(**Testes**: Testes unitários, de integração, de sistema e de aceitação do usuário \(UAT\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 507.4018110236219741 Td
+(**Implantação**: Configuração do ambiente de produção e deploy do sistema.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 479.0553543307086102 Td
+(**Treinamento e go-live**: Treinamento dos usuários finais e acompanhamento inicial.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 450.7088976377952463 Td
+(**Suporte e manutenção**: Garantia de funcionamento contínuo e futuras melhorias.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 422.3624409448818255 Td
+(7 CRITÉRIOS DE SUCESSO) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 394.0159842519684616 Td
+(Os seguintes critérios serão utilizados para avaliar o sucesso do projeto:) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 365.6695275590550409 Td
+(Todas as funcionalidades principais implementadas conforme o escopo.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 337.323070866141677 Td
+(Alta taxa de adoção e satisfação dos usuários.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 308.9766141732283131 Td
+(Redução no tempo médio de resposta a falhas \(MTTR\).) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 280.6301574803148924 Td
+(Aumento da conformidade com o plano de manutenção preventiva.) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 252.2837007874014716 Td
+(Disponibilidade do sistema de 99.5% ou superior.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R ]
+/Count 8
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+25 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+26 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+27 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+28 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+29 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+30 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+31 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+32 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 19 0 R
+/F2 20 0 R
+/F3 21 0 R
+/F4 22 0 R
+/F5 23 0 R
+/F6 24 0 R
+/F7 25 0 R
+/F8 26 0 R
+/F9 27 0 R
+/F10 28 0 R
+/F11 29 0 R
+/F12 30 0 R
+/F13 31 0 R
+/F14 32 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+33 0 obj
+<<
+/Producer (jsPDF 3.0.1)
+/CreationDate (D:20251011092947-03'00')
+>>
+endobj
+34 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 35
+0000000000 65535 f 
+0000031248 00000 n 
+0000033116 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004215 00000 n 
+0000004352 00000 n 
+0000007922 00000 n 
+0000008059 00000 n 
+0000011927 00000 n 
+0000012065 00000 n 
+0000015834 00000 n 
+0000015973 00000 n 
+0000019640 00000 n 
+0000019779 00000 n 
+0000023649 00000 n 
+0000023788 00000 n 
+0000027849 00000 n 
+0000027988 00000 n 
+0000031351 00000 n 
+0000031477 00000 n 
+0000031608 00000 n 
+0000031742 00000 n 
+0000031880 00000 n 
+0000032004 00000 n 
+0000032133 00000 n 
+0000032265 00000 n 
+0000032401 00000 n 
+0000032529 00000 n 
+0000032656 00000 n 
+0000032785 00000 n 
+0000032918 00000 n 
+0000033020 00000 n 
+0000033369 00000 n 
+0000033455 00000 n 
+trailer
+<<
+/Size 35
+/Root 34 0 R
+/Info 33 0 R
+/ID [ <5186941ED8D51789BF6444ABCD472181> <5186941ED8D51789BF6444ABCD472181> ]
+>>
+startxref
+33559
+%%EOF

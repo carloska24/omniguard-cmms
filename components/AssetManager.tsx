@@ -64,7 +64,7 @@ const MOCK_ASSET_DOCS = [
 ];
 
 export const AssetManager: React.FC = () => {
-  const { assets, addAsset, updateAsset } = useMaintenance(); // USANDO CONTEXTO
+  const { assets, addAsset, updateAsset, deleteAsset } = useMaintenance(); // USANDO CONTEXTO
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -322,6 +322,19 @@ export const AssetManager: React.FC = () => {
     setTempAiDocument(null);
   };
 
+  const handleDeleteAsset = async () => {
+    if (!selectedAsset) return;
+    if (
+      confirm(
+        `Tem certeza que deseja EXCLUIR o equipamento "${selectedAsset.name}"? Esta ação é irreversível.`
+      )
+    ) {
+      await deleteAsset(selectedAsset.id);
+      setSelectedAsset(null);
+      setIsModalOpen(false);
+    }
+  };
+
   // --- MANUAL PART SAVING ---
   const handleSaveNewPart = (e: React.FormEvent) => {
     e.preventDefault();
@@ -508,6 +521,12 @@ export const AssetManager: React.FC = () => {
               className="bg-omni-panel border border-omni-border hover:border-omni-cyan text-white px-4 py-2 rounded flex items-center gap-2 text-sm transition-all"
             >
               <Icons.Edit className="w-4 h-4" /> Editar
+            </button>
+            <button
+              onClick={handleDeleteAsset}
+              className="bg-red-500/10 border border-red-500/50 hover:bg-red-500 hover:text-white text-red-500 px-4 py-2 rounded flex items-center gap-2 text-sm transition-all"
+            >
+              <Icons.Trash className="w-4 h-4" /> Excluir
             </button>
           </div>
         </div>
@@ -1337,6 +1356,61 @@ export const AssetManager: React.FC = () => {
                         setEditingAsset({ ...editingAsset, acquisitionDate: e.target.value })
                       }
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
+                      Custo de Aquisição (R$)
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
+                      value={editingAsset.cost || ''}
+                      onChange={e =>
+                        setEditingAsset({ ...editingAsset, cost: parseFloat(e.target.value) })
+                      }
+                    />
+                  </div>
+
+                  {/* TECHNICAL SPECS ROW */}
+                  <div className="col-span-2 grid grid-cols-3 gap-4 bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                        Potência
+                      </label>
+                      <input
+                        className="w-full bg-omni-dark border border-omni-border rounded px-2 py-1.5 text-white text-sm focus:border-omni-cyan outline-none"
+                        placeholder="Ex: 10CV"
+                        value={editingAsset.power || ''}
+                        onChange={e => setEditingAsset({ ...editingAsset, power: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                        Voltagem
+                      </label>
+                      <input
+                        className="w-full bg-omni-dark border border-omni-border rounded px-2 py-1.5 text-white text-sm focus:border-omni-cyan outline-none"
+                        placeholder="Ex: 220V"
+                        value={editingAsset.voltage || ''}
+                        onChange={e =>
+                          setEditingAsset({ ...editingAsset, voltage: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">
+                        Capacidade
+                      </label>
+                      <input
+                        className="w-full bg-omni-dark border border-omni-border rounded px-2 py-1.5 text-white text-sm focus:border-omni-cyan outline-none"
+                        placeholder="Ex: 5000L"
+                        value={editingAsset.capacity || ''}
+                        onChange={e =>
+                          setEditingAsset({ ...editingAsset, capacity: e.target.value })
+                        }
+                      />
+                    </div>
                   </div>
 
                   {/* HIERARCHY SELECTION */}

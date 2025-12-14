@@ -8,6 +8,7 @@ interface PreventiveManagerProps {
   assets: Asset[];
   onAddPlan: (plan: PreventivePlan) => void;
   onUpdatePlan: (plan: PreventivePlan) => void;
+  onDeletePlan?: (id: string) => void;
   onCreateTicket?: (ticket: MaintenanceTicket) => void;
 }
 
@@ -16,6 +17,7 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
   assets,
   onAddPlan,
   onUpdatePlan,
+  onDeletePlan,
   onCreateTicket,
 }) => {
   // UI States
@@ -128,6 +130,16 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
     setIsFormOpen(false);
   };
 
+  const handleDelete = () => {
+    if (editingPlan.id && onDeletePlan) {
+      if (confirm('Tem certeza que deseja excluir este plano?')) {
+        onDeletePlan(editingPlan.id);
+        setIsFormOpen(false);
+        showToast('Plano excluído.', 'success');
+      }
+    }
+  };
+
   const handleGenerateTicket = (e: React.MouseEvent, plan: PreventivePlan) => {
     e.stopPropagation();
 
@@ -143,7 +155,7 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
       id: `step-${index}-${Date.now()}`,
       text: task,
       checked: false,
-      category: 'execution', // Default category for preventive tasks
+      category: 'execution' as const, // Default category for preventive tasks
     }));
 
     const newTicket: MaintenanceTicket = {
@@ -219,8 +231,9 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
           setEditingPlan(prev => ({ ...prev, tasks: [...(prev.tasks || []), ...tasks] }));
         }
       }
-    } catch (error) {
-      showToast('Erro ao gerar checklist com IA.', 'error');
+    } catch (error: any) {
+      console.error('Erro AI:', error);
+      showToast(`Erro IA: ${error.message || 'Falha na API'}`, 'error');
     } finally {
       setIsGenerating(false);
     }
@@ -674,23 +687,79 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
                 </div>
               </div>
 
-              {/* Status Control (Only visible when editing) */}
-              {editingPlan.id && (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                    Status do Plano
+                    Duração Estimada (min)
                   </label>
-                  <select
+                  <input
+                    type="number"
                     className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
-                    value={editingPlan.status}
+                    value={editingPlan.estimatedTime || 0}
                     onChange={e =>
-                      setEditingPlan({ ...editingPlan, status: e.target.value as any })
+                      setEditingPlan({ ...editingPlan, estimatedTime: parseInt(e.target.value) })
                     }
-                  >
-                    <option value="active">Ativo (Agendamento Automático)</option>
-                    <option value="paused">Pausado (Inativo)</option>
-                  </select>
+                  />
                 </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
+                    Recursos (Separe por vírgula)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
+                    placeholder="Ex: Alicate, Luvas, Chave 10mm"
+                    value={editingPlan.requiredResources?.join(', ') || ''}
+                    onChange={e =>
+                      setEditingPlan({
+                        ...editingPlan,
+                        requiredResources: e.target.value
+                          .split(',')
+                          .map(s => s.trim())
+                          .filter(Boolean),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Status Control (Only visible when editing) */}
+              {editingPlan.id && (
+                <>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
+                      Status do Plano
+                    </label>
+                    <select
+                      className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
+                      value={editingPlan.status}
+                      onChange={e =>
+                        setEditingPlan({ ...editingPlan, status: e.target.value as any })
+                      }
+                    >
+                      <option value="active">Ativo (Agendamento Automático)</option>
+                      <option value="paused">Pausado (Inativo)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      id="autoGen"
+                      className="w-4 h-4 rounded bg-omni-dark border-omni-border text-omni-cyan focus:ring-omni-cyan"
+                      checked={editingPlan.autoGenerate !== false} // Default true
+                      onChange={e =>
+                        setEditingPlan({ ...editingPlan, autoGenerate: e.target.checked })
+                      }
+                    />
+                    <label
+                      htmlFor="autoGen"
+                      className="text-sm text-slate-300 font-bold select-none cursor-pointer"
+                    >
+                      Gerar Tickets Automaticamente
+                    </label>
+                  </div>
+                </>
               )}
 
               <div>
@@ -769,20 +838,33 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-omni-border">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white font-bold text-sm"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg transition-colors shadow-lg shadow-cyan-500/20 text-sm"
-                >
-                  {editingPlan.id ? 'Salvar Alterações' : 'Criar Plano'}
-                </button>
+              <div className="flex justify-between pt-4 border-t border-omni-border">
+                <div>
+                  {editingPlan.id && onDeletePlan && (
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="text-red-500 hover:text-red-400 text-sm font-bold flex items-center gap-1"
+                    >
+                      <Icons.Trash className="w-4 h-4" /> Excluir
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="px-4 py-2 text-slate-400 hover:text-white font-bold text-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg transition-colors shadow-lg shadow-cyan-500/20 text-sm"
+                  >
+                    {editingPlan.id ? 'Salvar Alterações' : 'Criar Plano'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -16,12 +15,26 @@ import { SettingsView } from './components/SettingsView';
 import { MobileFieldView } from './components/MobileFieldView'; // IMPORTED
 import { ViewState } from './types';
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { LoginView } from './components/LoginView';
 
 function AppContent() {
+  const { user, loading } = useAuth();
   const [showLanding, setShowLanding] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
 
-  const { assets, plans, addPlan, updatePlan, addTicket } = useMaintenance();
+  if (loading)
+    return (
+      <div className="h-screen w-full bg-black flex items-center justify-center text-omni-cyan">
+        Carregando Sistema...
+      </div>
+    );
+
+  if (!user) {
+    return <LoginView />;
+  }
+
+  const { assets, plans, addPlan, updatePlan, deletePlan, addTicket } = useMaintenance();
 
   const renderView = () => {
     switch (currentView) {
@@ -37,11 +50,12 @@ function AppContent() {
         return <TicketManager />;
       case 'preventive':
         return (
-          <PreventiveManager 
-            plans={plans} 
-            assets={assets} 
+          <PreventiveManager
+            plans={plans}
+            assets={assets}
             onAddPlan={addPlan}
             onUpdatePlan={updatePlan}
+            onDeletePlan={deletePlan}
             onCreateTicket={addTicket}
           />
         );
@@ -49,7 +63,7 @@ function AppContent() {
         return <WorkOrderKanban />;
       case 'inventory':
         return <InventoryManager />;
-      case 'purchases': 
+      case 'purchases':
         return <PurchaseManager />;
       case 'settings':
         return <SettingsView />;
@@ -62,43 +76,52 @@ function AppContent() {
 
   const getPageTitle = () => {
     switch (currentView) {
-        case 'dashboard': return 'Dashboard Geral';
-        case 'analytics': return 'BI & Analytics';
-        case 'digital-twin': return 'Visualização 3D & Digital Twin';
-        case 'assets': return 'Gestão de Ativos (3.1)';
-        case 'tickets': return 'Chamados Corretivos (3.2)';
-        case 'preventive': return 'Planejamento Preventivo (3.3)';
-        case 'kanban': return 'Execução de Ordens';
-        case 'inventory': return 'Gestão de Almoxarifado';
-        case 'purchases': return 'Gestão de Compras';
-        case 'settings': return 'Configurações & Administração';
-        default: return 'Painel de Controle';
+      case 'dashboard':
+        return 'Dashboard Geral';
+      case 'analytics':
+        return 'BI & Analytics';
+      case 'digital-twin':
+        return 'Visualização 3D & Digital Twin';
+      case 'assets':
+        return 'Gestão de Ativos (3.1)';
+      case 'tickets':
+        return 'Chamados Corretivos (3.2)';
+      case 'preventive':
+        return 'Planejamento Preventivo (3.3)';
+      case 'kanban':
+        return 'Execução de Ordens';
+      case 'inventory':
+        return 'Gestão de Almoxarifado';
+      case 'purchases':
+        return 'Gestão de Compras';
+      case 'settings':
+        return 'Configurações & Administração';
+      default:
+        return 'Painel de Controle';
     }
-  }
+  };
 
   // Se estiver no estado de Landing Page, renderiza apenas ela
   if (showLanding) {
-      return <LandingPage onEnter={() => setShowLanding(false)} />;
+    return <LandingPage onEnter={() => setShowLanding(false)} />;
   }
 
   // If Mobile Field View is active, Render without default shell to simulate native app feel
   if (currentView === 'mobile-field') {
-      return (
-          <div className="h-screen w-full bg-black font-sans">
-              <MobileFieldView />
-          </div>
-      );
+    return (
+      <div className="h-screen w-full bg-black font-sans">
+        <MobileFieldView />
+      </div>
+    );
   }
 
   return (
     <div className="flex h-screen w-full bg-omni-dark text-slate-200 font-sans grid-bg">
       <Sidebar currentView={currentView} setView={setCurrentView} />
-      
+
       <main className="flex-1 flex flex-col min-w-0">
         <Header title={getPageTitle()} setView={setCurrentView} />
-        <div className="flex-1 overflow-hidden relative">
-           {renderView()}
-        </div>
+        <div className="flex-1 overflow-hidden relative">{renderView()}</div>
       </main>
     </div>
   );
@@ -106,8 +129,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <MaintenanceProvider>
-      <AppContent />
-    </MaintenanceProvider>
+    <AuthProvider>
+      <MaintenanceProvider>
+        <AppContent />
+      </MaintenanceProvider>
+    </AuthProvider>
   );
 }

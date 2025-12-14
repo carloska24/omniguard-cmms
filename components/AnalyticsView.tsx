@@ -8,21 +8,20 @@ import {
   CartesianGrid,
   Tooltip,
   AreaChart,
-  PieChart,
-  Pie,
-  Cell,
   Area,
   Radar,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  BarChart,
-  Legend,
+  Line,
+  Cell,
 } from 'recharts';
+import ReactECharts from 'echarts-for-react';
 import { Icons } from './Icons';
 import { useMaintenance } from '../context/MaintenanceContext';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { motion } from 'framer-motion';
 
 // --- CONFIGURAÇÃO DE DESIGN (THEME PREMIUM) ---
 const THEME = {
@@ -39,8 +38,373 @@ const THEME = {
   },
 };
 
-// --- CUSTOM COMPONENTS ---
-// 1. AI Command Center (Já existente, mantido)
+// --- ANIMATION VARIANTS (Framer Motion) ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 100, damping: 12 },
+  },
+};
+
+// --- ECHARTS COMPONENTS ---
+
+// 1. Fleet Health Gauge (Alive)
+const FleetHealthGauge = ({ onlinePercentage }: { onlinePercentage: number }) => {
+  // LIVE SIMULATION STATE
+  const [simulatedValue, setSimulatedValue] = useState(onlinePercentage);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Oscilação randômica pequena (+/- 2%)
+      const noise = (Math.random() - 0.5) * 4;
+      setSimulatedValue(Math.max(0, Math.min(100, onlinePercentage + noise)));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [onlinePercentage]);
+
+  const option = {
+    series: [
+      {
+        type: 'gauge',
+        startAngle: 180,
+        endAngle: 0,
+        min: 0,
+        max: 100,
+        splitNumber: 10,
+        axisLine: {
+          lineStyle: {
+            width: 10,
+            color: [
+              [0.7, THEME.colors.danger], // < 70% Red
+              [0.9, THEME.colors.warning], // 70-90% Yellow
+              [1, THEME.colors.success], // > 90% Green
+            ],
+          },
+        },
+        pointer: {
+          icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+          length: '12%',
+          width: 20,
+          offsetCenter: [0, '-60%'],
+          itemStyle: {
+            color: 'auto',
+          },
+        },
+        axisTick: {
+          length: 12,
+          lineStyle: {
+            color: 'auto',
+            width: 2,
+          },
+        },
+        splitLine: {
+          length: 20,
+          lineStyle: {
+            color: 'auto',
+            width: 5,
+          },
+        },
+        axisLabel: {
+          color: '#cbd5e1',
+          fontSize: 10,
+          distance: -60,
+          formatter: function (value: number) {
+            if (value === 0 || value === 100) {
+              return value + '';
+            }
+            return '';
+          },
+        },
+        title: {
+          offsetCenter: [0, '-20%'],
+          fontSize: 30,
+        },
+        detail: {
+          fontSize: 36,
+          offsetCenter: [0, '0%'],
+          valueAnimation: true,
+          formatter: function (value: number) {
+            return Math.round(value) + '%';
+          },
+          color: 'auto',
+          fontFamily: 'monospace',
+          fontWeight: 'bold',
+        },
+        data: [
+          {
+            value: simulatedValue,
+            name: 'Health',
+          },
+        ],
+      },
+    ],
+    graphic: {
+      elements: [
+        {
+          type: 'text',
+          left: 'center',
+          top: 'bottom',
+          style: {
+            text: 'FROTA ONLINE',
+            font: 'bold 12px sans-serif',
+            fill: '#64748b',
+          },
+        },
+      ],
+    },
+    backgroundColor: 'transparent',
+  };
+
+  return <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />;
+};
+
+// --- CUSTOM COMPONENTS (RECHARTS) ---
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#0f1219]/95 border border-white/10 p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] backdrop-blur-xl z-50 min-w-[200px] animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-white font-display font-bold text-xs mb-3 border-b border-white/10 pb-2 uppercase tracking-widest opacity-80">
+          {label}
+        </p>
+        <div className="space-y-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-6 text-xs group">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]"
+                  style={{ backgroundColor: entry.color || entry.fill || entry.stroke }}
+                ></div>
+                <span className="text-slate-300 font-medium capitalize">{entry.name}:</span>
+              </div>
+              <span className="text-white font-mono font-bold tracking-wide">
+                {typeof entry.value === 'number' && entry.name?.toLowerCase().includes('custo')
+                  ? `R$ ${entry.value.toLocaleString('pt-BR')}`
+                  : typeof entry.value === 'number' && entry.unit === '%'
+                  ? `${entry.value.toFixed(1)}%`
+                  : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const FailureHeatmap = ({ tickets }: { tickets: any[] }) => {
+  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const timeBlocks = ['00-04h', '04-08h', '08-12h', '12-16h', '16-20h', '20-24h'];
+  const gridData = useMemo(() => {
+    const grid = Array(7)
+      .fill(0)
+      .map(() => Array(6).fill(0));
+    tickets.forEach(t => {
+      const d = new Date(t.createdAt);
+      const day = d.getDay();
+      const hour = d.getHours();
+      grid[day][Math.floor(hour / 4)] += 1;
+    });
+    return grid;
+  }, [tickets]);
+
+  return (
+    <div className="bg-omni-panel border border-omni-border rounded-2xl p-5 shadow-lg flex flex-col h-full hover:border-red-500/30 transition-all group relative overflow-hidden backdrop-blur-sm">
+      <h4 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wider">
+        <Icons.Grid3X3 className="w-3 h-3 text-red-500" /> Mapa de Calor (Falhas)
+      </h4>
+      <div className="flex-1 flex flex-col justify-center z-10">
+        <div className="grid grid-cols-7 gap-1">
+          <div className="col-span-1"></div>
+          {timeBlocks.map(t => (
+            <div key={t} className="text-[7px] text-slate-500 text-center uppercase font-bold">
+              {t}
+            </div>
+          ))}
+        </div>
+        {days.map((day, dIdx) => (
+          <div key={day} className="grid grid-cols-7 gap-1 mb-1 items-center">
+            <div className="text-[8px] text-slate-400 font-bold uppercase text-right pr-2">
+              {day}
+            </div>
+            {timeBlocks.map((_, tIdx) => {
+              const value = gridData[dIdx][tIdx];
+              const intensity = Math.min(value * 40, 255);
+              return (
+                <div
+                  key={`${day}-${tIdx}`}
+                  className="h-6 rounded-sm transition-all hover:scale-110 hover:brightness-150 cursor-help relative group/cell"
+                  style={{
+                    backgroundColor:
+                      value === 0 ? '#1e293b' : `rgba(239, 68, 68, ${0.2 + intensity / 255})`,
+                    border:
+                      value > 0 ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid transparent',
+                  }}
+                >
+                  {value > 0 && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-[9px] rounded opacity-0 group-hover/cell:opacity-100 whitespace-nowrap z-50 pointer-events-none">
+                      {value} falhas
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const FailurePareto = ({ tickets }: { tickets: any[] }) => {
+  const data = useMemo(() => {
+    const counts: Record<string, number> = {};
+    tickets.forEach(t => {
+      const type = t.type || 'outros';
+      counts[type] = (counts[type] || 0) + 1;
+    });
+
+    const sorted = Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    const total = sorted.reduce((acc, curr) => acc + curr.value, 0);
+    let accum = 0;
+
+    return sorted.slice(0, 6).map(item => {
+      accum += item.value;
+      return {
+        ...item,
+        cumulative: Math.round((accum / total) * 100),
+      };
+    });
+  }, [tickets]);
+
+  return (
+    <div className="bg-omni-panel border border-omni-border rounded-2xl p-5 shadow-lg flex flex-col h-full relative overflow-hidden backdrop-blur-sm">
+      <h4 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wider">
+        <Icons.BarChart2 className="w-3 h-3 text-yellow-500" /> Pareto de Causas
+      </h4>
+      <div className="flex-1 w-full min-h-[180px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <XAxis
+              dataKey="name"
+              stroke="#64748b"
+              fontSize={10}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              yAxisId="left"
+              stroke="#64748b"
+              fontSize={10}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke="#f59e0b"
+              fontSize={10}
+              tickLine={false}
+              axisLine={false}
+              unit="%"
+              domain={[0, 100]}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'white', opacity: 0.05 }} />
+            <Bar
+              yAxisId="left"
+              dataKey="value"
+              name="Ocorrências"
+              fill="#3b82f6"
+              barSize={30}
+              radius={[4, 4, 0, 0]}
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="cumulative"
+              name="% Acumulado"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              dot={{ r: 4, fill: '#f59e0b' }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+// 5. Team Radar (Alive)
+const TeamRadar = () => {
+  // LIVE SIMULATION
+  const [data, setData] = useState([
+    { subject: 'Mecânica', A: 120, fullMark: 150 },
+    { subject: 'Elétrica', A: 98, fullMark: 150 },
+    { subject: 'Hidráulica', A: 86, fullMark: 150 },
+    { subject: 'SW/IoT', A: 99, fullMark: 150 },
+    { subject: 'Segurança', A: 140, fullMark: 150 },
+    { subject: 'Gestão', A: 85, fullMark: 150 },
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData(prev =>
+        prev.map(item => ({
+          ...item,
+          A: Math.min(150, Math.max(50, item.A + (Math.random() - 0.5) * 5)),
+        }))
+      );
+    }, 1500); // 1.5s refresh
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="bg-omni-panel border border-omni-border rounded-2xl p-5 shadow-lg flex flex-col h-full relative overflow-hidden backdrop-blur-sm">
+      <h4 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wider">
+        <Icons.Crosshair className="w-3 h-3 text-purple-500" /> Matriz de Competências
+      </h4>
+      <div className="flex-1 w-full min-h-[180px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+            <PolarGrid stroke="#334155" opacity={0.5} />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+            <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
+            <Radar
+              name="Nível Médio"
+              dataKey="A"
+              stroke={THEME.colors.secondary}
+              strokeWidth={3}
+              fill={THEME.colors.secondary}
+              fillOpacity={0.4}
+              isAnimationActive={true} // Recharts handles this transition
+            />
+            <Tooltip content={<CustomTooltip />} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+// 6. AI Command Center (Mantido)
 const AiCommandCenter = ({ data, tickets }: { data: any; tickets: any[] }) => {
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,11 +421,11 @@ const AiCommandCenter = ({ data, tickets }: { data: any; tickets: any[] }) => {
         totalTickets: tickets.length,
         criticalTickets: tickets.filter(t => t.urgency === 'critical').length,
         costYTD: data.reduce((acc: number, m: any) => acc + m.custo, 0),
-        trends: 'Dados populados. Analise os padrões.',
+        lastMonthTrend: 'Analise os dados financeiros e de falhas fornecidos',
       };
       const prompt = `Atue como IA Industrial JARVIS. Analise: ${JSON.stringify(
         summary
-      )}. Gere insight estratégico de 2 linhas sobre eficiência e custos. Tom futurista.`;
+      )}. Gere insight estratégico curto (max 2 frases) sobre eficiência, custos e riscos. Tom futurista e direto.`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       setInsight(response.text());
@@ -85,7 +449,7 @@ const AiCommandCenter = ({ data, tickets }: { data: any; tickets: any[] }) => {
   }, [insight]);
 
   return (
-    <div className="col-span-12 bg-gradient-to-r from-slate-900 to-[#0B0E14] border border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-2xl group hover:border-omni-cyan/30 transition-all">
+    <div className="bg-gradient-to-r from-slate-900 to-[#0B0E14] border border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-2xl group hover:border-omni-cyan/30 transition-all">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
       <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
         <Icons.Bot className="w-32 h-32 text-omni-cyan animate-pulse" />
@@ -125,191 +489,6 @@ const AiCommandCenter = ({ data, tickets }: { data: any; tickets: any[] }) => {
   );
 };
 
-// 2. Custom Tooltip (Premium)
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-[#0f1219]/95 border border-white/10 p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] backdrop-blur-xl z-50 min-w-[200px] animate-in fade-in zoom-in-95 duration-200">
-        <p className="text-white font-display font-bold text-xs mb-3 border-b border-white/10 pb-2 uppercase tracking-widest opacity-80">
-          {label}
-        </p>
-        <div className="space-y-2">
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center justify-between gap-6 text-xs group">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]"
-                  style={{ backgroundColor: entry.color || entry.fill }}
-                ></div>
-                <span className="text-slate-300 font-medium capitalize">{entry.name}:</span>
-              </div>
-              <span className="text-white font-mono font-bold tracking-wide">
-                {typeof entry.value === 'number' && entry.name.toLowerCase().includes('custo')
-                  ? `R$ ${entry.value.toLocaleString('pt-BR')}`
-                  : entry.value}
-                {entry.name === 'Disponibilidade' && '%'}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
-// 3. Failure Heatmap (Mantido e Polido)
-const FailureHeatmap = ({ tickets }: { tickets: any[] }) => {
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const timeBlocks = ['00-04h', '04-08h', '08-12h', '12-16h', '16-20h', '20-24h'];
-  const gridData = useMemo(() => {
-    const grid = Array(7)
-      .fill(0)
-      .map(() => Array(6).fill(0));
-    tickets.forEach(t => {
-      const d = new Date(t.createdAt);
-      const day = d.getDay();
-      const hour = d.getHours();
-      grid[day][Math.floor(hour / 4)] += 1;
-    });
-    return grid;
-  }, [tickets]);
-
-  return (
-    <div className="bg-omni-panel border border-omni-border rounded-xl p-5 shadow-lg flex flex-col h-full hover:border-red-500/30 transition-all group relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-red-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-      <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2 z-10">
-        <Icons.Grid3X3 className="w-4 h-4 text-red-500" /> Mapa de Calor de Falhas
-      </h4>
-      <div className="flex-1 flex flex-col justify-center z-10">
-        <div className="grid grid-cols-7 gap-1">
-          <div className="col-span-1"></div>
-          {timeBlocks.map(t => (
-            <div key={t} className="text-[7px] text-slate-500 text-center uppercase font-bold">
-              {t}
-            </div>
-          ))}
-        </div>
-        {days.map((day, dIdx) => (
-          <div key={day} className="grid grid-cols-7 gap-1 mb-1 items-center">
-            <div className="text-[8px] text-slate-400 font-bold uppercase text-right pr-2">
-              {day}
-            </div>
-            {timeBlocks.map((_, tIdx) => {
-              const value = gridData[dIdx][tIdx];
-              const intensity = Math.min(value * 30, 255); // Mais sensível com poucos dados
-              return (
-                <div
-                  key={`${day}-${tIdx}`}
-                  className="h-6 rounded-sm transition-all hover:scale-110 hover:brightness-150 cursor-help relative group/cell"
-                  style={{
-                    backgroundColor:
-                      value === 0 ? '#1e293b' : `rgba(239, 68, 68, ${0.2 + intensity / 200})`,
-                    border:
-                      value > 0 ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid transparent',
-                  }}
-                >
-                  {value > 0 && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-[9px] rounded opacity-0 group-hover/cell:opacity-100 whitespace-nowrap z-50">
-                      {value} falhas
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// 4. Pareto Chart (NOVO)
-const FailurePareto = ({ tickets }: { tickets: any[] }) => {
-  const data = useMemo(() => {
-    const counts: Record<string, number> = {};
-    tickets.forEach(t => {
-      const type = t.type || 'outros';
-      counts[type] = (counts[type] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5); // Top 5
-  }, [tickets]);
-
-  return (
-    <div className="bg-omni-panel border border-omni-border rounded-xl p-5 shadow-lg flex flex-col h-full relative overflow-hidden">
-      <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2 z-10">
-        <Icons.BarChart2 className="w-4 h-4 text-yellow-500" /> Top 5 Causas (Pareto)
-      </h4>
-      <div className="flex-1 w-full min-h-[180px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
-            <XAxis type="number" hide />
-            <YAxis
-              dataKey="name"
-              type="category"
-              stroke="#94a3b8"
-              fontSize={10}
-              width={80}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'white', opacity: 0.05 }} />
-            <Bar
-              dataKey="value"
-              name="Ocorrências"
-              fill={THEME.colors.warning}
-              radius={[0, 4, 4, 0]}
-              barSize={20}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
-// 5. Team Radar (NOVO)
-const TeamRadar = () => {
-  // Mock Data para Radar de Equipe
-  const data = [
-    { subject: 'Mecânica', A: 120, fullMark: 150 },
-    { subject: 'Elétrica', A: 98, fullMark: 150 },
-    { subject: 'Hidráulica', A: 86, fullMark: 150 },
-    { subject: 'Software', A: 99, fullMark: 150 },
-    { subject: 'Segurança', A: 140, fullMark: 150 },
-    { subject: 'Gestão', A: 65, fullMark: 150 },
-  ];
-
-  return (
-    <div className="bg-omni-panel border border-omni-border rounded-xl p-5 shadow-lg flex flex-col h-full relative overflow-hidden">
-      <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2 z-10">
-        <Icons.Crosshair className="w-4 h-4 text-purple-500" /> Skills da Equipe
-      </h4>
-      <div className="flex-1 w-full min-h-[180px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-            <PolarGrid stroke="#334155" opacity={0.5} />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-            <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
-            <Radar
-              name="Competência Média"
-              dataKey="A"
-              stroke={THEME.colors.secondary}
-              strokeWidth={2}
-              fill={THEME.colors.secondary}
-              fillOpacity={0.3}
-            />
-            <Tooltip content={<CustomTooltip />} />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
 // --- MAIN VIEW ---
 export const AnalyticsView: React.FC = () => {
   const { tickets, assets } = useMaintenance();
@@ -331,13 +510,11 @@ export const AnalyticsView: React.FC = () => {
       'Nov',
       'Dez',
     ];
-    const currentYear = new Date().getFullYear();
     const monthlyStats = months.map(m => ({ name: m, custo: 0, tickets: 0, disponibilidade: 100 }));
 
     tickets.forEach(ticket => {
       const date = new Date(ticket.createdAt);
-      const monthIdx = date.getMonth(); // Independent of year for demo
-      // if (date.getFullYear() === currentYear) { ... } // Relaxed for seeding demo
+      const monthIdx = date.getMonth();
       monthlyStats[monthIdx].custo += ticket.totalCost || 0;
       monthlyStats[monthIdx].tickets += 1;
       let impact = ticket.urgency === 'critical' ? 2.5 : ticket.urgency === 'high' ? 1.0 : 0.2;
@@ -353,18 +530,11 @@ export const AnalyticsView: React.FC = () => {
     }));
   }, [tickets]);
 
-  const healthData = useMemo(() => {
-    const counts = { operational: 0, warning: 0, critical: 0 };
-    assets.forEach(a => {
-      if (a.status === 'operational') counts.operational++;
-      else if (a.status === 'maintenance') counts.warning++;
-      else counts.critical++;
-    });
-    return [
-      { name: 'Operacional', value: counts.operational, color: THEME.colors.success },
-      { name: 'Atenção/Prev.', value: counts.warning, color: THEME.colors.warning },
-      { name: 'Crítico/Parado', value: counts.critical, color: THEME.colors.danger },
-    ].filter(d => d.value > 0);
+  const fleetHealth = useMemo(() => {
+    const total = assets.length;
+    if (total === 0) return 100;
+    const operational = assets.filter(a => a.status === 'operational').length;
+    return (operational / total) * 100;
   }, [assets]);
 
   const totalCostYTD = financialData.reduce((acc, m) => acc + m.custo, 0);
@@ -376,7 +546,7 @@ export const AnalyticsView: React.FC = () => {
       <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-cyan-600/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
       <div className="relative z-10 max-w-[1600px] mx-auto w-full space-y-6">
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -394,10 +564,6 @@ export const AnalyticsView: React.FC = () => {
             </h2>
           </div>
           <div className="flex gap-4">
-            <button className="bg-[#0e121b] border border-white/5 hover:border-slate-500 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-cyan-500/10 active:scale-95 group">
-              <Icons.RefreshCw className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />{' '}
-              Atualizar
-            </button>
             <div className="flex bg-[#0e121b] border border-white/5 rounded-xl p-1 shadow-lg">
               {['7D', '30D', 'YTD'].map(r => (
                 <button
@@ -416,118 +582,48 @@ export const AnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <AiCommandCenter data={financialData} tickets={tickets} />
+        {/* BENTO GRID LAYOUT - ANIMATED */}
+        <motion.div
+          className="grid grid-cols-12 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* 1. AI Command Center */}
+          <motion.div className="col-span-12" variants={itemVariants}>
+            <AiCommandCenter data={financialData} tickets={tickets} />
+          </motion.div>
 
-        {/* KPI Row */}
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-12 md:col-span-6 lg:col-span-3 bg-[#0e121b]/80 backdrop-blur border border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-2xl hover:border-cyan-500/30 transition-all">
-            <p className="text-[10px] text-cyan-500 font-bold uppercase tracking-widest mb-1">
-              Custo Operacional
-            </p>
-            <h3 className="text-3xl font-mono font-bold text-white">
-              R$ {(totalCostYTD / 1000).toFixed(1)}k
-            </h3>
-            <div className="h-12 w-full mt-4 opacity-50">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={financialData}>
-                  <Area
-                    type="monotone"
-                    dataKey="custo"
-                    stroke={THEME.colors.primary}
-                    fill={THEME.colors.primary}
-                    fillOpacity={0.2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="col-span-12 md:col-span-6 lg:col-span-3 bg-[#0e121b]/80 backdrop-blur border border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-2xl hover:border-purple-500/30 transition-all">
-            <p className="text-[10px] text-purple-500 font-bold uppercase tracking-widest mb-1">
-              Disponibilidade
-            </p>
-            <h3 className="text-3xl font-mono font-bold text-white">96.8%</h3>
-            <div className="h-12 w-full mt-4 opacity-50">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={financialData}>
-                  <Area
-                    type="monotone"
-                    dataKey="disponibilidade"
-                    stroke={THEME.colors.secondary}
-                    fill={THEME.colors.secondary}
-                    fillOpacity={0.2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="col-span-12 md:col-span-6 lg:col-span-3 bg-[#0e121b]/80 backdrop-blur border border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-2xl hover:border-emerald-500/30 transition-all">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-1">
-                  Ativos Operacionais
-                </p>
-                <h3 className="text-3xl font-mono font-bold text-white">
-                  {tickets.length > 0 ? '24/30' : '0/0'}
-                </h3>
-              </div>
-              <Icons.Activity className="w-8 h-8 text-emerald-500/50" />
-            </div>
-            <div className="mt-6 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 w-[80%] shadow-[0_0_10px_#10b981]"></div>
-            </div>
-          </div>
-          <div className="col-span-12 md:col-span-6 lg:col-span-3 bg-[#0e121b]/80 backdrop-blur border border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-2xl hover:border-orange-500/30 transition-all">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-1">
-                  Chamados Abertos
-                </p>
-                <h3 className="text-3xl font-mono font-bold text-white">
-                  {tickets.filter(t => t.status !== 'done').length}
-                </h3>
-              </div>
-              <Icons.AlertTriangle className="w-8 h-8 text-orange-500/50" />
-            </div>
-            <div className="mt-6 flex gap-1">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div
-                  key={i}
-                  className={`h-1 flex-1 rounded-full ${i <= 3 ? 'bg-orange-500' : 'bg-slate-800'}`}
-                ></div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Main Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[350px]">
-          {/* Chart 1: Main Trend */}
-          <div className="col-span-2 bg-[#0e121b] border border-white/5 rounded-2xl p-6 shadow-2xl flex flex-col">
-            <div className="flex justify-between items-center mb-6">
+          {/* 2. Main Financial Chart */}
+          <motion.div
+            className="col-span-12 lg:col-span-8 bg-[#0e121b] border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-white/10 transition-all"
+            variants={itemVariants}
+          >
+            <div className="flex justify-between items-center mb-6 z-10 relative">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Icons.TrendingUp className="w-5 h-5 text-omni-cyan" /> Tendência Financeira
               </h3>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-slate-400">
-                  <span className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_5px_cyan]"></span>{' '}
-                  Custo
-                </div>
-                <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-slate-400">
-                  <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_5px_purple]"></span>{' '}
-                  Disp.
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-500 uppercase font-bold">Total YTD</p>
+                  <p className="text-xl font-mono text-white font-bold">
+                    R$ {(totalCostYTD / 1000).toFixed(1)}k
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="flex-1 w-full min-h-[250px]">
+
+            <div className="w-full h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={financialData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
+                <AreaChart data={financialData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="mainBarGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={THEME.colors.primary} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={THEME.colors.primary} stopOpacity={0.1} />
+                    <linearGradient id="colorCusto" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={THEME.colors.primary} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={THEME.colors.primary} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorDisp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={THEME.colors.secondary} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={THEME.colors.secondary} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -555,85 +651,61 @@ export const AnalyticsView: React.FC = () => {
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    domain={[0, 100]}
                     stroke="#64748b"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={val => `${val}%`}
+                    domain={[0, 100]}
                   />
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                  />
-                  <Bar
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
                     yAxisId="left"
                     dataKey="custo"
-                    name="Custo"
-                    fill="url(#mainBarGrad)"
-                    barSize={24}
-                    radius={[4, 4, 0, 0]}
+                    stroke={THEME.colors.primary}
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorCusto)"
                   />
                   <Area
-                    yAxisId="right"
                     type="monotone"
+                    yAxisId="right"
                     dataKey="disponibilidade"
-                    name="Disp."
                     stroke={THEME.colors.secondary}
                     strokeWidth={3}
-                    fill="none"
+                    fillOpacity={1}
+                    fill="url(#colorDisp)"
                   />
-                </ComposedChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Chart 2: Asset Health Donut (Improved) */}
-          <div className="col-span-1 bg-[#0e121b] border border-white/5 rounded-2xl p-6 shadow-2xl flex flex-col relative overflow-hidden">
-            <h3 className="text-lg font-bold text-white mb-4 z-10">Saúde da Frota</h3>
-            <div className="flex-1 relative z-10 w-full min-h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={healthData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={70}
-                    outerRadius={90}
-                    paddingAngle={5}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {healthData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
-                        stroke="rgba(0,0,0,0.5)"
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
-                <span className="text-4xl font-display font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                  {assets.length}
-                </span>
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                  Ativos Totais
-                </span>
-              </div>
+          {/* 3. Fleet Health Gauge (New - ECharts) */}
+          <motion.div
+            className="col-span-12 lg:col-span-4 bg-[#0e121b] border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-white/10 transition-all flex flex-col"
+            variants={itemVariants}
+          >
+            <h3 className="text-lg font-bold text-white mb-2 z-10 flex items-center gap-2">
+              <Icons.Activity className="w-5 h-5 text-emerald-500" /> Saúde da Frota
+            </h3>
+            <div className="flex-1 w-full min-h-[250px] relative">
+              <FleetHealthGauge onlinePercentage={fleetHealth} />
             </div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Support Charts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[250px]">
-          <FailureHeatmap tickets={tickets} />
-          <FailurePareto tickets={tickets} />
-          <TeamRadar />
-        </div>
+          {/* 4. Bottom Grid (3 Cols) */}
+          <motion.div className="col-span-12 lg:col-span-4 h-[280px]" variants={itemVariants}>
+            <FailureHeatmap tickets={tickets} />
+          </motion.div>
+          <motion.div className="col-span-12 lg:col-span-4 h-[280px]" variants={itemVariants}>
+            <FailurePareto tickets={tickets} />
+          </motion.div>
+          <motion.div className="col-span-12 lg:col-span-4 h-[280px]" variants={itemVariants}>
+            <TeamRadar />
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

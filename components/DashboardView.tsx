@@ -35,21 +35,21 @@ const sparkData1 = [{ v: 10 }, { v: 15 }, { v: 12 }, { v: 20 }, { v: 18 }, { v: 
 const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 border border-slate-700 p-3 rounded-lg shadow-2xl backdrop-blur-md min-w-[150px]">
-        <p className="mb-2 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1">
-          Horário: {label}
+      <div className="bg-slate-900/95 border border-slate-700 p-3 rounded-lg shadow-2xl backdrop-blur-md min-w-[180px] z-50">
+        <p className="mb-2 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1 flex justify-between">
+          <span>Horário:</span> <span className="text-white">{label}</span>
         </p>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4 text-xs">
               <span className="flex items-center gap-2 text-slate-300">
                 <div
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 rounded-full shadow-[0_0_5px_currentColor]"
                   style={{ backgroundColor: entry.color }}
                 ></div>
                 {entry.name === 'load' ? 'Carga Fabril' : 'Consumo Energia'}
               </span>
-              <span className="font-mono font-bold text-white">
+              <span className="font-mono font-bold text-white text-sm">
                 {entry.value.toFixed(1)}
                 <span className="text-slate-500 text-[10px] ml-0.5">
                   {entry.name === 'load' ? '%' : 'kW'}
@@ -65,7 +65,7 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 };
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
-  const { assets, tickets } = useMaintenance(); // USING CONTEXT
+  const { assets, tickets } = useMaintenance();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [liveData, setLiveData] = useState(generateInitialData());
@@ -161,20 +161,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#050608] p-6 overflow-hidden">
+    <div className="flex flex-col h-full bg-[#050608] p-6 overflow-hidden relative">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
+
       {/* HEADER DO DASHBOARD */}
-      <div className="flex justify-between items-end mb-6 shrink-0">
+      <div className="flex justify-between items-end mb-6 shrink-0 z-10">
         <div>
           <h2 className="text-2xl font-display font-bold text-white tracking-wide">
             Visão Geral da Planta
           </h2>
           <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]"></span>
             Operação em Tempo Real • Turno A
           </p>
         </div>
         <div className="text-right hidden md:block">
-          <p className="text-2xl font-mono font-bold text-white tracking-widest">
+          <p className="text-2xl font-mono font-bold text-white tracking-widest text-shadow-glow">
             {currentTime.toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -190,12 +192,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
       </div>
 
       {/* GRID PRINCIPAL */}
-      <div className="flex-1 grid grid-cols-12 grid-rows-[auto_auto_1fr] gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-2 pb-6">
+      <div className="flex-1 grid grid-cols-12 grid-rows-[auto_auto_1fr] gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-2 pb-6 z-10">
         {/* AI BRIEFING CARD */}
         <div className="col-span-12 relative group perspective-1000">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-omni-cyan/30 rounded-xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-500 animate-pulse-slow"></div>
-          <div className="relative bg-gradient-to-r from-[#1a1033] to-[#0f172a] border border-purple-500/50 rounded-xl p-5 flex gap-5 items-start shadow-[0_0_30px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.3)] transition-all duration-500 group-hover:scale-[1.01] group-hover:rotate-x-1">
-            {/* Icon Box */}
+          <div className="relative bg-gradient-to-r from-[#1a1033] to-[#0f172a] border border-purple-500/50 rounded-xl p-5 flex gap-5 items-start shadow-[0_0_30px_rgba(168,85,247,0.15)] group-hover:shadow-[0_0_50px_rgba(168,85,247,0.3)] transition-all duration-500 group-hover:scale-[1.005]">
             <div className="p-3 bg-purple-500/20 rounded-xl border border-purple-500/30 shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
               <Icons.Bot className="w-8 h-8 text-purple-400" />
             </div>
@@ -263,14 +264,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
         {/* Card 1: Assets */}
         <div
           onClick={() => setView('assets')}
-          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-blue-500/50 transition-all shadow-lg hover:shadow-blue-900/10"
+          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-blue-500/50 transition-all shadow-lg hover:shadow-blue-900/10 relative overflow-hidden"
         >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Icons.Box className="w-16 h-16 text-blue-500 transform rotate-12" />
+          </div>
           <div className="flex justify-between items-center mb-4 relative z-10">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Total Ativos
             </span>
-            <div className="p-1.5 bg-blue-500/10 rounded border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-              <Icons.Box className="w-4 h-4 text-blue-500" />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded border border-green-500/20">
+              <Icons.ArrowUpRight className="w-3 h-3" /> 5%
             </div>
           </div>
           <div className="flex items-end justify-between relative z-10">
@@ -296,15 +300,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
         {/* Card 2: Work Orders */}
         <div
           onClick={() => setView('tickets')}
-          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-omni-cyan/50 transition-all shadow-lg hover:shadow-cyan-900/10"
+          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-omni-cyan/50 transition-all shadow-lg hover:shadow-cyan-900/10 relative overflow-hidden"
         >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Icons.ClipboardList className="w-16 h-16 text-omni-cyan transform -rotate-6" />
+          </div>
           <div className="flex justify-between items-center mb-4 relative z-10">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Chamados Abertos
             </span>
-            <div className="flex items-center gap-1 bg-omni-cyan/10 px-2 py-1 rounded border border-omni-cyan/20">
-              <Icons.TrendingUp className="w-3 h-3 text-omni-cyan" />
-              <span className="text-[10px] font-bold text-omni-cyan">+2</span>
+            <div className="flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded border border-red-400/20">
+              <Icons.ArrowUpRight className="w-3 h-3" /> +2
             </div>
           </div>
           <div className="flex items-end justify-between relative z-10">
@@ -337,25 +343,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
         {/* Card 3: Critical */}
         <div
           onClick={() => setView('assets')}
-          className={`col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border rounded-xl p-5 cursor-pointer group transition-all shadow-lg ${
+          className={`col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border rounded-xl p-5 cursor-pointer group transition-all shadow-lg relative overflow-hidden ${
             criticalAssets > 0
-              ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]'
+              ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]'
               : 'border-omni-border hover:border-red-500/50'
           }`}
         >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Icons.AlertTriangle className="w-16 h-16 text-red-500 transform rotate-12" />
+          </div>
           {criticalAssets > 0 && (
-            <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-red-500/10 rounded-full blur-2xl animate-pulse"></div>
+            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
           )}
 
           <div className="flex justify-between items-center mb-4 relative z-10">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Alertas Críticos
             </span>
-            <Icons.Alert
-              className={`w-5 h-5 ${
-                criticalAssets > 0 ? 'text-red-500 animate-pulse' : 'text-slate-600'
-              }`}
-            />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded border border-green-500/20">
+              <Icons.ArrowDownRight className="w-3 h-3" /> -1 vs ontem
+            </div>
           </div>
           <div className="flex items-end justify-between relative z-10">
             <div>
@@ -385,14 +392,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
         {/* Card 4: OEE */}
         <div
           onClick={() => setView('analytics')}
-          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-purple-500/50 transition-all shadow-lg hover:shadow-purple-900/10"
+          className="col-span-12 sm:col-span-6 lg:col-span-3 bg-omni-panel border border-omni-border rounded-xl p-5 cursor-pointer group hover:border-purple-500/50 transition-all shadow-lg hover:shadow-purple-900/10 relative overflow-hidden"
         >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Icons.Activity className="w-16 h-16 text-purple-500 transform -rotate-12" />
+          </div>
           <div className="flex justify-between items-center mb-4 relative z-10">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               OEE Global
             </span>
-            <div className="p-1.5 bg-purple-500/10 rounded border border-purple-500/20 group-hover:bg-purple-500/20 transition-colors">
-              <Icons.Activity className="w-4 h-4 text-purple-500" />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded border border-green-500/20">
+              <Icons.ArrowUpRight className="w-3 h-3" /> +1.2%
             </div>
           </div>
           <div className="flex items-end justify-between relative z-10">
@@ -402,9 +412,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
               </span>
               <span className="text-[10px] text-slate-500 font-mono mt-1 block">Meta: 85%</span>
             </div>
-            {/* Circular Progress (CSS Simulated) */}
-            <div className="relative w-10 h-10 rounded-full border-4 border-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-l-transparent border-b-transparent rotate-45 shadow-[0_0_10px_#a855f7]"></div>
+            {/* Circular Progress */}
+            <div className="relative w-10 h-10 rounded-full border-4 border-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+              <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-l-transparent border-b-transparent rotate-45"></div>
               <span className="text-[9px] font-bold text-purple-500">A</span>
             </div>
           </div>
@@ -417,8 +427,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
           <div className="bg-omni-panel border border-omni-border rounded-xl p-5 flex flex-col h-full relative overflow-hidden shadow-2xl">
             <div className="flex justify-between items-center mb-4 z-10 relative">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-omni-cyan/10 rounded-lg text-omni-cyan border border-omni-cyan/20">
-                  <Icons.Activity className="w-5 h-5" />
+                <div className="p-2 bg-omni-cyan/10 rounded-lg text-omni-cyan border border-omni-cyan/20 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                  <Icons.Activity className="w-5 h-5 animate-pulse-slow" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Carga da Planta vs. Energia</h3>
@@ -462,8 +472,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
                     minTickGap={30}
                   />
                   <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                  {/* IMPLEMENTED CUSTOM TOOLTIP */}
-                  <Tooltip content={<CustomChartTooltip />} />
+                  {/* CROSSHAIR IMPLEMENTED HERE */}
+                  <Tooltip
+                    content={<CustomChartTooltip />}
+                    cursor={{
+                      stroke: 'rgba(6, 182, 212, 0.5)',
+                      strokeWidth: 1,
+                      strokeDasharray: '4 4',
+                    }}
+                    trigger="hover"
+                  />
                   <Area
                     type="monotone"
                     dataKey="load"
@@ -537,7 +555,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
                 className={`bg-omni-panel border border-omni-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all group ${btn.bg} hover:border-white/20 hover:-translate-y-1 shadow-md hover:shadow-xl`}
               >
                 <div
-                  className={`p-3 rounded-full bg-omni-dark border border-omni-border group-hover:scale-110 transition-transform ${btn.color}`}
+                  className={`p-3 rounded-full bg-omni-dark border border-omni-border group-hover:scale-110 transition-transform ${btn.color} shadow-lg`}
                 >
                   <btn.icon className="w-5 h-5" />
                 </div>
@@ -552,10 +570,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
         {/* COLUMN RIGHT: Feed & Status */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
           {/* Recent Alerts Panel */}
-          <div className="bg-omni-panel border border-omni-border rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg">
+          <div className="bg-omni-panel border border-omni-border rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg hover:border-white/10 transition-colors">
             <div className="p-4 border-b border-omni-border flex justify-between items-center bg-slate-900/50">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Icons.Bell className="w-4 h-4 text-slate-400" /> Feed de Alertas
+                <div className="relative">
+                  <Icons.Bell className="w-4 h-4 text-slate-400" />
+                  <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                  <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </div>
+                Feed de Alertas
               </h3>
               <button
                 onClick={() => setView('tickets')}
@@ -566,7 +589,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
             </div>
 
             <div className="p-2 overflow-y-auto custom-scrollbar flex-1 space-y-2">
-              {/* ADDED ONCLICK HANDLERS AND HOVER EFFECTS */}
               <div
                 onClick={() => setView('tickets')}
                 className="p-3 bg-red-500/5 border-l-2 border-red-500 rounded hover:bg-red-500/10 transition-all cursor-pointer group active:scale-95 hover:scale-[1.02]"
@@ -575,7 +597,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
                   <span className="text-xs font-bold text-red-400 flex items-center gap-1">
                     <Icons.Alert className="w-3 h-3" /> Vibração Crítica
                   </span>
-                  <span className="text-[9px] text-slate-500 font-mono">10m atrás</span>
+                  {/* TIMER IMPLEMENTED */}
+                  <span className="text-[9px] text-red-300 font-mono flex items-center gap-1 bg-red-500/10 px-1.5 rounded animate-pulse">
+                    <Icons.Clock className="w-3 h-3" /> Há 14 min
+                  </span>
                 </div>
                 <p className="text-xs text-slate-300 font-medium group-hover:text-white">
                   Turbina TG-01 excedeu limites operacionais.
@@ -590,7 +615,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
                   <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
                     <Icons.Thermometer className="w-3 h-3" /> Temp. Elevada
                   </span>
-                  <span className="text-[9px] text-slate-500 font-mono">2h atrás</span>
+                  <span className="text-[9px] text-orange-300 font-mono">Há 2h</span>
                 </div>
                 <p className="text-xs text-slate-300 font-medium group-hover:text-white">
                   Compressor C-22 operando acima de 85°C.
@@ -611,34 +636,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setView }) => {
                   Braço Robótico R-04 requer calibração.
                 </p>
               </div>
-
-              {/* Decorative older item - Non clickable logic but visually active */}
-              <div className="p-3 bg-omni-dark border-l-2 border-slate-700 rounded opacity-60">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
-                    <Icons.Check className="w-3 h-3" /> Sistema
-                  </span>
-                  <span className="text-[9px] text-slate-600 font-mono">5h atrás</span>
-                </div>
-                <p className="text-xs text-slate-500">Backup automático realizado com sucesso.</p>
-              </div>
             </div>
           </div>
 
-          {/* Mini Status Card */}
-          <div className="bg-gradient-to-br from-green-900/20 to-omni-panel border border-green-900/30 rounded-xl p-4 flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
-                <Icons.Wifi className="w-5 h-5" />
+          {/* Mini Status Card (IoT Pulse) */}
+          <div className="bg-gradient-to-br from-[#0a2015] to-[#050608] border border-green-500/20 rounded-xl p-4 flex items-center justify-between shadow-[0_0_20px_rgba(34,197,94,0.05)] relative overflow-hidden group">
+            {/* Scanline effect */}
+            <div className="absolute inset-0 bg-green-500/5 w-full h-full animate-[scan_2s_linear_infinite] pointer-events-none opacity-0 group-hover:opacity-100"></div>
+
+            <div className="flex items-center gap-4 z-10">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/30 text-green-500">
+                  <Icons.Wifi className="w-6 h-6" />
+                </div>
+                {/* IOT PULSE ANIMATION */}
+                <div className="absolute inset-0 rounded-full border border-green-500 opacity-0 animate-ping"></div>
+                <div className="absolute inset-0 rounded-full border border-green-400 opacity-20 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
               </div>
+
               <div>
-                <p className="text-xs font-bold text-white uppercase">Conectividade IoT</p>
-                <p className="text-[10px] text-green-400">128 Sensores Online</p>
+                <p className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  Conectividade IoT
+                  <span className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_lime]"></span>
+                </p>
+                <p className="text-[10px] text-green-400 font-mono mt-0.5">128 Sensores Online</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xl font-mono font-bold text-white">12ms</p>
-              <p className="text-[9px] text-slate-500 uppercase">Latência</p>
+            <div className="text-right z-10">
+              <p className="text-xl font-mono font-bold text-white shadow-green-glow">12ms</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold">Latência</p>
             </div>
           </div>
         </div>
