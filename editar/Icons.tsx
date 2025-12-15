@@ -1,17 +1,16 @@
-import {
-  LayoutDashboard,
-  List, // Added List
-  Box,
-  Cpu,
-  ClipboardList,
-  Settings,
-  Bell,
-  Mic,
-  Search,
+
+import { 
+  LayoutDashboard, 
+  Box, 
+  Cpu, 
+  ClipboardList, 
+  Settings, 
+  Bell, 
+  Mic, 
+  Search, 
   User,
   ChevronRight,
   ChevronLeft,
-  ChevronDown,
   Activity,
   AlertTriangle,
   Clock,
@@ -76,27 +75,19 @@ import {
   Image,
   Lock,
   LogOut,
-  Grid3X3,
-  LayoutGrid, // Added LayoutGrid
-  RefreshCw,
-  BarChart2,
-  Crosshair,
-  ArrowUpRight,
-  ArrowDownRight,
-  MessageCircle,
-  Phone,
-  Power,
+  // New Shadcn/Modern Icons
   SquareKanban,
   CalendarClock,
   LifeBuoy,
   PanelLeftClose,
   PanelLeftOpen,
   CreditCard,
+  LayoutGrid, // ADDED
+  List // ADDED
 } from 'lucide-react';
 
 export const Icons = {
   Dashboard: LayoutDashboard,
-  List: List, // Added List
   Asset: Box,
   AI: Cpu,
   WorkOrder: ClipboardList,
@@ -107,15 +98,13 @@ export const Icons = {
   User: User,
   ChevronRight: ChevronRight,
   ChevronLeft: ChevronLeft,
-  ChevronDown: ChevronDown,
   Activity: Activity,
   Alert: AlertTriangle,
-  AlertTriangle: AlertTriangle,
+  AlertTriangle: AlertTriangle, 
   Clock: Clock,
   Check: CheckCircle2,
   CheckCircle2: CheckCircle2,
   More: MoreHorizontal,
-  MoreHorizontal: MoreHorizontal,
   Thermometer: Thermometer,
   Zap: Zap,
   Box: Box,
@@ -178,20 +167,13 @@ export const Icons = {
   Image: Image,
   Lock: Lock,
   LogOut: LogOut,
-  Grid3X3: Grid3X3,
-  LayoutGrid: LayoutGrid, // Added LayoutGrid
-  RefreshCw: RefreshCw,
-  BarChart2: BarChart2,
-  Crosshair: Crosshair,
-  ArrowUpRight: ArrowUpRight,
-  ArrowDownRight: ArrowDownRight,
-  MessageCircle: MessageCircle,
-  Phone: Phone,
-  Power: Power,
+  // New Mappings for Sidebar
   Kanban: SquareKanban,
   Preventive: CalendarClock,
   Support: LifeBuoy,
   Collapse: PanelLeftClose,
   Expand: PanelLeftOpen,
   Billing: CreditCard,
+  LayoutGrid: LayoutGrid, // ADDED
+  List: List // ADDED
 };

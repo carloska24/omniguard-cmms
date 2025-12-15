@@ -128,7 +128,7 @@ export interface MaintenanceTicket {
   occurrenceDate: string;
 
   // Defined by Requester vs Manager
-  urgency: 'low' | 'medium' | 'high';
+  urgency: 'low' | 'medium' | 'high' | 'critical';
   // Defined by Manager
   priority?: 'low' | 'medium' | 'high' | 'critical';
 
@@ -153,29 +153,42 @@ export interface MaintenanceTicket {
   usedParts?: TicketPartUsage[];
   timeLogs?: TicketTimeLog[];
   checklist?: ChecklistItem[];
-  totalCost?: number;
+  totalCost?: number; // Calculated (Parts + Labor)
 }
 
+// --- NEW: User & Settings Types ---
+export interface CurrentUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  department: string;
+  phone?: string; // NEW: WhatsApp Notification
+}
+
+// PDF 3.3 - Planejamento de Preventiva
 export interface PreventivePlan {
   id: string;
   name: string;
   description: string;
   status?: 'active' | 'paused';
-  assetIds: string[];
-  frequencyType: 'time' | 'usage';
-  frequencyValue: number;
+  assetIds: string[]; // Equipamentos associados
+  frequencyType: 'time' | 'usage'; // Baseada em tempo ou contador
+  frequencyValue: number; // ex: 7 (dias) ou 1000 (horas)
   frequencyUnit?: 'days' | 'months' | 'years';
   tasks: string[] | ChecklistItem[]; // Enhanced tasks
-  estimatedTime?: number;
-  lastExecution?: string;
-  nextExecution?: string;
-  createdAt?: string;
+  estimatedTime?: number; // em minutos
+  lastExecution?: string; // NEW: Data da última ordem gerada
+  nextExecution?: string; // Calculated or manual override
+  createdAt?: string; // NEW
 
   // NEW SCOPE
   requiredResources?: string[]; // Tools, EPIs
   autoGenerate?: boolean; // If true, system generates ticket automatically
 }
 
+// Keep existing AI types for the dashboard
 export interface AiPrediction {
   id: string;
   assetName: string;
@@ -196,12 +209,16 @@ export interface Technician {
   shift: 'morning' | 'afternoon' | 'night';
   efficiency: number;
   avatar?: string;
+  phone?: string; // NEW: WhatsApp Notification
 }
 
 export interface SystemSettings {
   plantName: string;
+  plantAddress: string; // NEW
+  plantCapacity: string; // NEW
   currency: string;
   timezone: string;
   notificationsEnabled: boolean;
   autoAssignEnabled: boolean;
+  maintenanceMode: boolean; // NEW
 }

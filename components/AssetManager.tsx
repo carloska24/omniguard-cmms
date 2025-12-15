@@ -69,6 +69,7 @@ export const AssetManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewType, setViewType] = useState<'list' | 'grid'>('list'); // NEW STATE FOR VIEW SELECTOR
 
   // Form States
   const [editingAsset, setEditingAsset] = useState<Partial<Asset>>({});
@@ -454,6 +455,151 @@ export const AssetManager: React.FC = () => {
       return <Icons.Activity className="w-4 h-4 text-green-400" />;
     return <Icons.Settings className="w-4 h-4 text-slate-600" />;
   };
+
+  // --- NEW GRID VIEW RENDERER ---
+  const renderGridView = () => (
+    <div className="flex-1 bg-omni-panel/20 border border-omni-border rounded-xl overflow-y-auto custom-scrollbar p-6 animate-in fade-in duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+        {filteredAssets.map(asset => {
+          const isChild = !!asset.parentId;
+          const healthScore = Math.max(
+            0,
+            100 - (asset.status === 'maintenance' ? 40 : asset.status === 'stopped' ? 90 : 0)
+          );
+
+          return (
+            <div
+              key={asset.id}
+              onClick={() => setSelectedAsset(asset)}
+              className="group bg-omni-dark border border-omni-border hover:border-omni-cyan/50 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:-translate-y-1 relative"
+            >
+              {/* Top Image Section */}
+              <div className="h-48 relative overflow-hidden bg-slate-900">
+                <img
+                  src={asset.image}
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  alt={asset.name}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-omni-dark via-transparent to-transparent opacity-80"></div>
+
+                {/* Overlay Badges */}
+                <div className="absolute top-3 left-3 flex gap-2">
+                  {asset.criticality === 'high' && (
+                    <span className="bg-red-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-lg animate-pulse">
+                      CRÍTICO
+                    </span>
+                  )}
+                  {isChild && (
+                    <span className="bg-slate-700 text-slate-300 text-[9px] font-bold px-2 py-1 rounded border border-slate-600">
+                      SUB-COMPONENTE
+                    </span>
+                  )}
+                </div>
+                <div className="absolute top-3 right-3">
+                  <span
+                    className={`px-2 py-1 rounded text-[10px] font-bold uppercase shadow-lg border backdrop-blur-md ${
+                      asset.status === 'operational'
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                        : asset.status === 'maintenance'
+                        ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                        : 'bg-red-500/20 text-red-400 border-red-500/30'
+                    }`}
+                  >
+                    {asset.status === 'operational'
+                      ? 'ONLINE'
+                      : asset.status === 'maintenance'
+                      ? 'MANUTENÇÃO'
+                      : 'PARADO'}
+                  </span>
+                </div>
+
+                {/* Quick Action Overlay (Appears on Hover) */}
+                <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      setSelectedAsset(asset);
+                    }}
+                    className="p-2 bg-omni-cyan text-omni-dark rounded-full hover:scale-110 transition-transform shadow-[0_0_15px_#06b6d4]"
+                  >
+                    <Icons.Search className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleOpenModal(asset);
+                    }}
+                    className="p-2 bg-slate-700 text-white rounded-full hover:scale-110 transition-transform hover:bg-slate-600"
+                  >
+                    <Icons.Edit className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 relative">
+                {/* Asset Identification */}
+                <div className="mb-4">
+                  <h3
+                    className="text-lg font-bold text-white leading-tight mb-1 truncate"
+                    title={asset.name}
+                  >
+                    {asset.name}
+                  </h3>
+                  <div className="flex justify-between items-center">
+                    <code className="text-xs font-mono text-omni-cyan bg-omni-cyan/10 px-1.5 py-0.5 rounded border border-omni-cyan/20">
+                      {asset.code}
+                    </code>
+                    <span className="text-[10px] text-slate-500 uppercase">
+                      {asset.manufacturer}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Key Metrics Grid */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="bg-slate-800/50 p-2 rounded border border-slate-700">
+                    <span className="text-[9px] text-slate-500 uppercase block">Local</span>
+                    <div className="flex items-center gap-1 text-xs text-slate-300 truncate">
+                      <Icons.MapPin className="w-3 h-3 text-purple-400" /> {asset.location}
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 p-2 rounded border border-slate-700">
+                    <span className="text-[9px] text-slate-500 uppercase block">
+                      Confiabilidade
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-slate-300">
+                      <Icons.Activity className="w-3 h-3 text-green-400" /> {healthScore}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Health Bar Visual */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase">
+                    <span>Saúde do Ativo</span>
+                    <span>MTBF: {asset.mtbf || 0}h</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-1000 ${
+                        healthScore > 80
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-400'
+                          : healthScore > 50
+                          ? 'bg-gradient-to-r from-orange-500 to-yellow-400'
+                          : 'bg-gradient-to-r from-red-600 to-red-400'
+                      }`}
+                      style={{ width: `${healthScore}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   // --- RENDERERS ---
 
@@ -1047,6 +1193,32 @@ export const AssetManager: React.FC = () => {
               <Icons.QrCode className="w-4 h-4" />
             </button>
           </div>
+          <div className="bg-omni-panel border border-omni-border rounded-lg p-1 flex mr-3">
+            <button
+              onClick={() => setViewType('list')}
+              className={`p-2 rounded-md transition-all ${
+                viewType === 'list'
+                  ? 'bg-slate-700 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Lista"
+            >
+              <Icons.ListChecks className="w-4 h-4" />{' '}
+              {/* Fallback icon if List not available, checking imports step 433 showed ListChecks */}
+            </button>
+            <button
+              onClick={() => setViewType('grid')}
+              className={`p-2 rounded-md transition-all ${
+                viewType === 'grid'
+                  ? 'bg-slate-700 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Grade Detalhada"
+            >
+              <Icons.Grid3X3 className="w-4 h-4" />
+            </button>
+          </div>
+
           <button
             onClick={() => handleOpenModal()}
             className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-4 rounded text-sm flex items-center gap-2 transition-colors"
@@ -1056,94 +1228,101 @@ export const AssetManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 bg-omni-panel border border-omni-border rounded-xl overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-400">
-            <thead className="bg-omni-dark text-xs uppercase font-bold text-slate-300">
-              <tr>
-                <th className="px-6 py-4">Equipamento</th>
-                <th className="px-6 py-4">Tag/Código</th>
-                <th className="px-6 py-4">Modelo/Fabr.</th>
-                <th className="px-6 py-4">Localização</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Criticidade</th>
-                <th className="px-6 py-4 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-omni-border">
-              {filteredAssets.map(asset => {
-                const isChild = !!asset.parentId;
-                return (
-                  <tr
-                    key={asset.id}
-                    onClick={() => setSelectedAsset(asset)}
-                    className="hover:bg-white/5 transition-colors group cursor-pointer"
-                  >
-                    <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
-                      {isChild && <Icons.Hierarchy className="w-4 h-4 text-slate-500 rotate-90" />}
-                      <img
-                        src={asset.image}
-                        className="w-8 h-8 rounded object-cover border border-omni-border"
-                        alt=""
-                      />
-                      <div>
-                        {asset.name}
+      {/* Conditional Rendering: List or Grid */}
+      {viewType === 'list' ? (
+        <div className="flex-1 bg-omni-panel border border-omni-border rounded-xl overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-400">
+              <thead className="bg-omni-dark text-xs uppercase font-bold text-slate-300">
+                <tr>
+                  <th className="px-6 py-4">Equipamento</th>
+                  <th className="px-6 py-4">Tag/Código</th>
+                  <th className="px-6 py-4">Modelo/Fabr.</th>
+                  <th className="px-6 py-4">Localização</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Criticidade</th>
+                  <th className="px-6 py-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-omni-border">
+                {filteredAssets.map(asset => {
+                  const isChild = !!asset.parentId;
+                  return (
+                    <tr
+                      key={asset.id}
+                      onClick={() => setSelectedAsset(asset)}
+                      className="hover:bg-white/5 transition-colors group cursor-pointer"
+                    >
+                      <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
                         {isChild && (
-                          <span className="text-[9px] text-slate-500 block">Sub-componente</span>
+                          <Icons.Hierarchy className="w-4 h-4 text-slate-500 rotate-90" />
                         )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-mono text-omni-cyan">{asset.code}</td>
-                    <td className="px-6 py-4">
-                      {asset.model} <br />{' '}
-                      <span className="text-xs opacity-50">{asset.manufacturer}</span>
-                    </td>
-                    <td className="px-6 py-4">{asset.location}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                          asset.status === 'operational'
-                            ? 'bg-omni-success/20 text-omni-success'
+                        <img
+                          src={asset.image}
+                          className="w-8 h-8 rounded object-cover border border-omni-border"
+                          alt=""
+                        />
+                        <div>
+                          {asset.name}
+                          {isChild && (
+                            <span className="text-[9px] text-slate-500 block">Sub-componente</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-omni-cyan">{asset.code}</td>
+                      <td className="px-6 py-4">
+                        {asset.model} <br />{' '}
+                        <span className="text-xs opacity-50">{asset.manufacturer}</span>
+                      </td>
+                      <td className="px-6 py-4">{asset.location}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                            asset.status === 'operational'
+                              ? 'bg-omni-success/20 text-omni-success'
+                              : asset.status === 'maintenance'
+                              ? 'bg-omni-orange/20 text-omni-orange'
+                              : 'bg-omni-danger/20 text-omni-danger'
+                          }`}
+                        >
+                          {asset.status === 'operational'
+                            ? 'OK'
                             : asset.status === 'maintenance'
-                            ? 'bg-omni-orange/20 text-omni-orange'
-                            : 'bg-omni-danger/20 text-omni-danger'
-                        }`}
-                      >
-                        {asset.status === 'operational'
-                          ? 'OK'
-                          : asset.status === 'maintenance'
-                          ? 'Manut.'
-                          : 'Parado'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-1">
-                        {[1, 2, 3].map(i => (
-                          <div
-                            key={i}
-                            className={`h-2 w-2 rounded-full ${
-                              asset.criticality === 'high' ||
-                              (asset.criticality === 'medium' && i <= 2) ||
-                              (asset.criticality === 'low' && i === 1)
-                                ? 'bg-purple-500'
-                                : 'bg-slate-700'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-slate-400 hover:text-omni-cyan p-2">
-                        <Icons.ChevronRight className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                            ? 'Manut.'
+                            : 'Parado'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-1">
+                          {[1, 2, 3].map(i => (
+                            <div
+                              key={i}
+                              className={`h-2 w-2 rounded-full ${
+                                asset.criticality === 'high' ||
+                                (asset.criticality === 'medium' && i <= 2) ||
+                                (asset.criticality === 'low' && i === 1)
+                                  ? 'bg-purple-500'
+                                  : 'bg-slate-700'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-slate-400 hover:text-omni-cyan p-2">
+                          <Icons.ChevronRight className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        renderGridView()
+      )}
     </div>
   );
 

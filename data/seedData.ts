@@ -461,8 +461,11 @@ export const initialTechnicians: Technician[] = [
 
 export const initialSettings: SystemSettings = {
   plantName: 'Planta Industrial 01 - São Paulo',
+  plantAddress: 'Av. Industrial, 1500 - Distrito Industrial',
+  plantCapacity: '850.000 ton/ano',
   currency: 'BRL',
   timezone: 'America/Sao_Paulo',
   notificationsEnabled: true,
   autoAssignEnabled: false,
+  maintenanceMode: false,
 };

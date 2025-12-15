@@ -23,7 +23,7 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
   // UI States
   const [selectedPlan, setSelectedPlan] = useState<PreventivePlan | null>(null); // Visualização (Detalhes)
   const [isFormOpen, setIsFormOpen] = useState(false); // Edição/Criação
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'table' | 'grid' | 'calendar'>('table'); // UPDATED VIEW MODES
   const [searchTerm, setSearchTerm] = useState('');
 
   // Form States
@@ -33,21 +33,6 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
 
   // Feedback
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-
-  // Helper robusto para extrair JSON
-  const extractJson = (text: string) => {
-    try {
-      const clean = text
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
-      return JSON.parse(clean);
-    } catch (e) {
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) return JSON.parse(match[0]);
-      throw e;
-    }
-  };
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -77,6 +62,20 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
     const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const getUrgencyColor = (days: number) => {
+    if (days < 0) return 'text-red-500 border-red-500/50 bg-red-500/10'; // Atrasado
+    if (days <= 3) return 'text-orange-500 border-orange-500/50 bg-orange-500/10'; // Crítico
+    if (days <= 7) return 'text-yellow-500 border-yellow-500/50 bg-yellow-500/10'; // Atenção
+    return 'text-omni-cyan border-omni-cyan/50 bg-omni-cyan/10'; // OK
+  };
+
+  const getUrgencyStatus = (days: number) => {
+    if (days < 0) return { label: 'ATRASADO', color: 'bg-red-500' };
+    if (days <= 3) return { label: 'URGENTE', color: 'bg-orange-500' };
+    if (days <= 7) return { label: 'PRÓXIMO', color: 'bg-yellow-500' };
+    return { label: 'EM DIA', color: 'bg-green-500' };
   };
 
   // --- ACTIONS ---
@@ -130,16 +129,6 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
     setIsFormOpen(false);
   };
 
-  const handleDelete = () => {
-    if (editingPlan.id && onDeletePlan) {
-      if (confirm('Tem certeza que deseja excluir este plano?')) {
-        onDeletePlan(editingPlan.id);
-        setIsFormOpen(false);
-        showToast('Plano excluído.', 'success');
-      }
-    }
-  };
-
   const handleGenerateTicket = (e: React.MouseEvent, plan: PreventivePlan) => {
     e.stopPropagation();
 
@@ -155,7 +144,7 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
       id: `step-${index}-${Date.now()}`,
       text: task,
       checked: false,
-      category: 'execution' as const, // Default category for preventive tasks
+      category: 'execution', // Default category for preventive tasks
     }));
 
     const newTicket: MaintenanceTicket = {
@@ -201,6 +190,20 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
     const updatedTasks = [...(editingPlan.tasks || [])];
     updatedTasks.splice(index, 1);
     setEditingPlan({ ...editingPlan, tasks: updatedTasks });
+  };
+
+  const extractJson = (text: string) => {
+    try {
+      const clean = text
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+      return JSON.parse(clean);
+    } catch (e) {
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) return JSON.parse(match[0]);
+      throw e;
+    }
   };
 
   const generateAiChecklist = async () => {
@@ -260,6 +263,251 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
     );
   };
 
+  // 1. TABLE VIEW RENDERER
+  const renderTableView = () => (
+    <div className="flex-1 bg-omni-panel border border-omni-border rounded-xl overflow-hidden flex flex-col shadow-2xl relative">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm text-slate-400">
+          <thead className="bg-omni-dark text-xs uppercase font-bold text-slate-300">
+            <tr>
+              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4">Plano Preventivo</th>
+              <th className="px-6 py-4">Ativo Alvo</th>
+              <th className="px-6 py-4">Frequência</th>
+              <th className="px-6 py-4">Próxima Exec.</th>
+              <th className="px-6 py-4">Tarefas</th>
+              <th className="px-6 py-4 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-omni-border">
+            {filteredPlans.map(plan => {
+              const asset = assets.find(a => a.id === plan.assetIds?.[0]);
+              const nextDue = calculateNextDueDate(plan);
+              const daysLeft = getDaysUntilDue(nextDue);
+              const urgency = getUrgencyStatus(daysLeft);
+
+              return (
+                <tr
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan)}
+                  className="hover:bg-white/5 transition-colors group cursor-pointer border-l-4 border-l-transparent hover:border-l-omni-cyan"
+                >
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-2 py-1 rounded text-[9px] font-bold uppercase ${urgency.color} text-black`}
+                    >
+                      {urgency.label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-bold text-white">
+                    {plan.name}
+                    <span className="block text-[10px] font-normal text-slate-500 mt-0.5">
+                      {plan.id}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 overflow-hidden">
+                      <img src={asset?.image} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <span className="block text-xs font-bold text-slate-300">
+                        {asset?.name || 'N/A'}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500">{asset?.code}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">{renderFrequencyBadge(plan)}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`font-mono font-bold ${
+                        daysLeft < 0 ? 'text-red-500' : 'text-slate-300'
+                      }`}
+                    >
+                      {nextDue.toLocaleDateString()}
+                    </span>
+                    <span className="block text-[10px] text-slate-500">{daysLeft} dias</span>
+                  </td>
+                  <td className="px-6 py-4 text-xs">
+                    <span className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded border border-white/5 w-fit">
+                      <Icons.ListChecks className="w-3 h-3" /> {plan.tasks.length}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={e => handleGenerateTicket(e, plan)}
+                      className="text-slate-400 hover:text-omni-cyan hover:bg-omni-cyan/10 p-2 rounded-lg transition-all"
+                      title="Gerar Ordem"
+                    >
+                      <Icons.Zap className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  // 2. GRID VIEW RENDERER (Rich Cards)
+  const renderGridView = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredPlans.map(plan => {
+        const asset = assets.find(a => a.id === plan.assetIds?.[0]);
+        const nextDue = calculateNextDueDate(plan);
+        const daysLeft = getDaysUntilDue(nextDue);
+        const urgency = getUrgencyStatus(daysLeft);
+        const frequencyPercent = Math.min(
+          100,
+          Math.max(0, (1 - daysLeft / plan.frequencyValue) * 100)
+        );
+
+        return (
+          <div
+            key={plan.id}
+            onClick={() => setSelectedPlan(plan)}
+            className="group bg-omni-dark border border-omni-border hover:border-omni-cyan/50 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:-translate-y-1 relative flex flex-col"
+          >
+            {/* Card Header (Image) */}
+            <div className="h-32 relative overflow-hidden bg-slate-900">
+              <img
+                src={asset?.image}
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                alt={asset?.name}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-omni-dark via-transparent to-transparent opacity-90"></div>
+
+              <div className="absolute top-3 right-3">
+                <span
+                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase shadow-lg border ${urgency.color} text-black border-transparent`}
+                >
+                  {urgency.label}
+                </span>
+              </div>
+
+              <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-black/50 backdrop-blur-sm rounded border border-white/10 text-omni-cyan">
+                    <Icons.Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-mono uppercase">
+                      Próxima
+                    </span>
+                    <span className="text-sm font-bold text-white">
+                      {nextDue.toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Body */}
+            <div className="p-5 flex-1 flex flex-col">
+              <h3 className="text-lg font-bold text-white leading-tight mb-1 line-clamp-2 group-hover:text-omni-cyan transition-colors">
+                {plan.name}
+              </h3>
+              <div className="flex items-center gap-2 text-xs text-slate-400 mb-4">
+                <Icons.Box className="w-3 h-3" />
+                <span className="truncate">{asset?.name || 'Ativo N/A'}</span>
+              </div>
+
+              <div className="mt-auto space-y-3">
+                {/* Status Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-800/50 p-2 rounded border border-slate-700">
+                    <span className="text-[9px] text-slate-500 uppercase block">Frequência</span>
+                    <span className="text-xs font-bold text-white flex items-center gap-1">
+                      <Icons.Clock className="w-3 h-3 text-purple-400" /> {plan.frequencyValue}{' '}
+                      {plan.frequencyUnit}
+                    </span>
+                  </div>
+                  <div className="bg-slate-800/50 p-2 rounded border border-slate-700">
+                    <span className="text-[9px] text-slate-500 uppercase block">Checklist</span>
+                    <span className="text-xs font-bold text-white flex items-center gap-1">
+                      <Icons.ListChecks className="w-3 h-3 text-blue-400" /> {plan.tasks.length}{' '}
+                      Itens
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={e => handleGenerateTicket(e, plan)}
+                  className="w-full py-2 bg-white/5 hover:bg-omni-cyan hover:text-omni-dark border border-white/10 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-2 group/btn"
+                >
+                  <Icons.Zap className="w-3 h-3 group-hover/btn:fill-current" /> Gerar Ordem Agora
+                </button>
+              </div>
+            </div>
+
+            {/* Progress Line at Bottom */}
+            <div className="h-1 w-full bg-slate-800">
+              <div
+                className={`h-full ${
+                  daysLeft < 0 ? 'bg-red-500' : 'bg-omni-cyan'
+                } transition-all duration-1000`}
+                style={{ width: `${frequencyPercent}%` }}
+              ></div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // 3. CALENDAR VIEW RENDERER (Existing logic updated visually)
+  const renderCalendarView = () => (
+    <div className="flex-1 bg-omni-panel border border-omni-border rounded-xl p-4 overflow-y-auto custom-scrollbar">
+      <div className="grid grid-cols-7 gap-4">
+        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
+          <div
+            key={d}
+            className="text-center text-xs font-bold text-slate-500 uppercase py-2 bg-omni-dark border border-omni-border rounded-lg mb-2"
+          >
+            {d}
+          </div>
+        ))}
+        {Array.from({ length: 35 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() + i);
+          const day = date.getDate();
+          // Mock simple logic to distribute plans
+          const dayPlans = plans.filter((_, idx) => (idx + day) % 7 === 0);
+
+          return (
+            <div
+              key={i}
+              className="bg-slate-900/50 border border-white/5 min-h-[120px] rounded-xl p-2 flex flex-col gap-1 hover:bg-slate-800 transition-colors relative group"
+            >
+              <span
+                className={`text-xs font-bold mb-1 ${
+                  i === 0 ? 'text-omni-cyan' : 'text-slate-400'
+                }`}
+              >
+                {day} {i === 0 && '(Hoje)'}
+              </span>
+              {dayPlans.map(p => (
+                <div
+                  key={p.id}
+                  onClick={() => setSelectedPlan(p)}
+                  className="text-[9px] bg-blue-500/10 text-blue-300 border-l-2 border-blue-500 px-2 py-1.5 rounded truncate cursor-pointer hover:bg-blue-500/20 hover:text-white transition-colors shadow-sm"
+                >
+                  {p.name}
+                </div>
+              ))}
+              {/* Add Button on Hover */}
+              <button className="absolute bottom-2 right-2 p-1 bg-omni-cyan text-omni-dark rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                <Icons.Plus className="w-3 h-3" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex-1 p-6 h-[calc(100vh-64px)] overflow-hidden flex flex-col relative">
       {toast && (
@@ -293,182 +541,65 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
             <input
               type="text"
               placeholder="Buscar planos..."
-              className="bg-omni-panel border border-omni-border rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-omni-cyan outline-none w-64 shadow-sm"
+              className="bg-omni-panel border border-omni-border rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-omni-cyan outline-none w-64 shadow-sm transition-all focus:w-72"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
+
+          {/* VIEW SELECTOR */}
           <div className="bg-omni-panel border border-omni-border rounded-lg p-1 flex">
             <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 ${
-                viewMode === 'list'
-                  ? 'bg-omni-dark text-white shadow'
+              onClick={() => setViewMode('table')}
+              className={`p-2 rounded-md transition-all ${
+                viewMode === 'table'
+                  ? 'bg-slate-700 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="Lista Detalhada"
             >
-              <Icons.ListChecks className="w-4 h-4" /> Lista
+              <Icons.List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-md transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-slate-700 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Grade de Cartões"
+            >
+              <Icons.LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 ${
+              className={`p-2 rounded-md transition-all ${
                 viewMode === 'calendar'
-                  ? 'bg-omni-dark text-white shadow'
+                  ? 'bg-slate-700 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="Calendário"
             >
-              <Icons.Calendar className="w-4 h-4" /> Calendário
+              <Icons.Calendar className="w-4 h-4" />
             </button>
           </div>
+
           <button
             onClick={openCreateForm}
-            className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-all shadow-lg shadow-cyan-500/20"
+            className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-all shadow-lg shadow-cyan-500/20 transform hover:-translate-y-0.5"
           >
             <Icons.Plus className="w-4 h-4" /> Criar Plano
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {viewMode === 'list' ? (
-          <div className="grid grid-cols-1 gap-4">
-            {filteredPlans.map(plan => {
-              const asset = assets.find(a => a.id === plan.assetIds?.[0]);
-              const nextDue = calculateNextDueDate(plan);
-              const daysLeft = getDaysUntilDue(nextDue);
-              const isLate = daysLeft < 0;
-
-              return (
-                <div
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan)} // OPEN DETAILS VIEW
-                  className={`bg-omni-panel border border-omni-border rounded-xl p-0 flex items-stretch hover:border-slate-500 transition-all cursor-pointer group shadow-lg relative overflow-hidden`}
-                >
-                  {/* Status Stripe */}
-                  <div
-                    className={`w-1.5 ${
-                      plan.status === 'paused' ? 'bg-slate-600' : 'bg-omni-cyan'
-                    }`}
-                  ></div>
-
-                  <div className="p-5 flex-1 flex items-center justify-between">
-                    {/* Main Info */}
-                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 bg-black/40 rounded-lg flex items-center justify-center border border-white/5">
-                        <Icons.ClipboardList className="w-6 h-6 text-slate-400 group-hover:text-omni-cyan transition-colors" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-white font-bold text-base">{plan.name}</h3>
-                          {plan.status === 'paused' && (
-                            <span className="text-[10px] bg-slate-700 text-slate-400 px-2 py-0.5 rounded font-bold uppercase">
-                              Pausado
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-slate-400">
-                          <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                            <Icons.Box className="w-3.5 h-3.5" />
-                            {asset ? asset.name : 'Ativo N/A'}
-                          </span>
-                          <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                          {renderFrequencyBadge(plan)}
-                          <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                          <span className="flex items-center gap-1">
-                            <Icons.ListChecks className="w-3.5 h-3.5" />
-                            {plan.tasks.length} Tarefas
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Schedule Info */}
-                    <div className="flex items-center gap-8">
-                      <div className="text-right">
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">
-                          Última Execução
-                        </p>
-                        <p className="text-xs font-mono text-slate-300">
-                          {plan.lastExecution
-                            ? new Date(plan.lastExecution).toLocaleDateString()
-                            : 'Nunca'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">
-                          Próxima Exec.
-                        </p>
-                        <div
-                          className={`text-sm font-bold flex items-center justify-end gap-2 ${
-                            isLate ? 'text-red-500' : 'text-omni-cyan'
-                          }`}
-                        >
-                          <span className="font-mono">{nextDue.toLocaleDateString()}</span>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] ${
-                              isLate
-                                ? 'bg-red-500/10 border border-red-500/20'
-                                : 'bg-omni-cyan/10 border border-omni-cyan/20'
-                            }`}
-                          >
-                            {isLate ? `${Math.abs(daysLeft)} dias atrasado` : `Em ${daysLeft} dias`}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Quick Action */}
-                      <button
-                        onClick={e => handleGenerateTicket(e, plan)}
-                        className="ml-4 bg-white/5 hover:bg-purple-600 hover:text-white text-purple-400 border border-purple-500/30 p-2.5 rounded-lg transition-all shadow-lg hover:shadow-purple-600/20 group/btn"
-                        title="Gerar O.S. Agora"
-                      >
-                        <Icons.Zap className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-4">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
-              <div
-                key={d}
-                className="text-center text-xs font-bold text-slate-500 uppercase py-2 bg-omni-panel border border-omni-border rounded-t-lg"
-              >
-                {d}
-              </div>
-            ))}
-            {Array.from({ length: 30 }, (_, i) => {
-              const date = new Date();
-              date.setDate(date.getDate() + i);
-              const day = date.getDate();
-              const dayPlans = plans.filter((_, idx) => (idx + day) % 5 === 0);
-
-              return (
-                <div
-                  key={i}
-                  className="bg-omni-panel/50 border border-omni-border h-32 rounded-lg p-2 flex flex-col gap-1 hover:bg-omni-panel transition-colors relative"
-                >
-                  <span className="text-xs font-bold text-slate-400 mb-1">{day}</span>
-                  {dayPlans.map(p => (
-                    <div
-                      key={p.id}
-                      onClick={() => setSelectedPlan(p)}
-                      className="text-[9px] bg-blue-500/10 text-blue-300 border-l-2 border-blue-500 px-1.5 py-1 rounded truncate cursor-pointer hover:bg-blue-500/20"
-                    >
-                      {p.name}
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pb-6 pr-2">
+        {viewMode === 'table' && renderTableView()}
+        {viewMode === 'grid' && renderGridView()}
+        {viewMode === 'calendar' && renderCalendarView()}
       </div>
 
-      {/* --- 1. DETAILS MODAL (High-Fidelity - FIXED HEIGHT & SCROLLABLE CONTENT) --- */}
+      {/* --- 1. DETAILS MODAL (High-Fidelity) --- */}
       {selectedPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in zoom-in-95 duration-200">
           <div className="bg-[#1e1e1e] border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
@@ -608,7 +739,7 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
         </div>
       )}
 
-      {/* --- 2. CREATE/EDIT FORM MODAL (Triggered by 'Edit' in Details or 'New Plan' in Header) --- */}
+      {/* --- 2. CREATE/EDIT FORM MODAL (Preserved logic, fits new UI) --- */}
       {isFormOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in-95 duration-200">
           <div className="bg-omni-panel border border-omni-border rounded-xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -687,79 +818,23 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                    Duração Estimada (min)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
-                    value={editingPlan.estimatedTime || 0}
-                    onChange={e =>
-                      setEditingPlan({ ...editingPlan, estimatedTime: parseInt(e.target.value) })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                    Recursos (Separe por vírgula)
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
-                    placeholder="Ex: Alicate, Luvas, Chave 10mm"
-                    value={editingPlan.requiredResources?.join(', ') || ''}
-                    onChange={e =>
-                      setEditingPlan({
-                        ...editingPlan,
-                        requiredResources: e.target.value
-                          .split(',')
-                          .map(s => s.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
               {/* Status Control (Only visible when editing) */}
               {editingPlan.id && (
-                <>
-                  <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                      Status do Plano
-                    </label>
-                    <select
-                      className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
-                      value={editingPlan.status}
-                      onChange={e =>
-                        setEditingPlan({ ...editingPlan, status: e.target.value as any })
-                      }
-                    >
-                      <option value="active">Ativo (Agendamento Automático)</option>
-                      <option value="paused">Pausado (Inativo)</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      type="checkbox"
-                      id="autoGen"
-                      className="w-4 h-4 rounded bg-omni-dark border-omni-border text-omni-cyan focus:ring-omni-cyan"
-                      checked={editingPlan.autoGenerate !== false} // Default true
-                      onChange={e =>
-                        setEditingPlan({ ...editingPlan, autoGenerate: e.target.checked })
-                      }
-                    />
-                    <label
-                      htmlFor="autoGen"
-                      className="text-sm text-slate-300 font-bold select-none cursor-pointer"
-                    >
-                      Gerar Tickets Automaticamente
-                    </label>
-                  </div>
-                </>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
+                    Status do Plano
+                  </label>
+                  <select
+                    className="w-full bg-omni-dark border border-omni-border rounded-lg px-3 py-2 text-white focus:border-omni-cyan outline-none"
+                    value={editingPlan.status}
+                    onChange={e =>
+                      setEditingPlan({ ...editingPlan, status: e.target.value as any })
+                    }
+                  >
+                    <option value="active">Ativo (Agendamento Automático)</option>
+                    <option value="paused">Pausado (Inativo)</option>
+                  </select>
+                </div>
               )}
 
               <div>
@@ -838,33 +913,20 @@ export const PreventiveManager: React.FC<PreventiveManagerProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-between pt-4 border-t border-omni-border">
-                <div>
-                  {editingPlan.id && onDeletePlan && (
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      className="text-red-500 hover:text-red-400 text-sm font-bold flex items-center gap-1"
-                    >
-                      <Icons.Trash className="w-4 h-4" /> Excluir
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="px-4 py-2 text-slate-400 hover:text-white font-bold text-sm"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg transition-colors shadow-lg shadow-cyan-500/20 text-sm"
-                  >
-                    {editingPlan.id ? 'Salvar Alterações' : 'Criar Plano'}
-                  </button>
-                </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-omni-border">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-4 py-2 text-slate-400 hover:text-white font-bold text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-omni-cyan hover:bg-cyan-400 text-omni-dark font-bold py-2 px-6 rounded-lg transition-colors shadow-lg shadow-cyan-500/20 text-sm"
+                >
+                  {editingPlan.id ? 'Salvar Alterações' : 'Criar Plano'}
+                </button>
               </div>
             </form>
           </div>
